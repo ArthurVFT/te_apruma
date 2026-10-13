@@ -31,10 +31,6 @@ make run
 
 ### Compilação Manual (PowerShell)
 
-```powershell
-gcc src/*.c -o build/teapruma.exe -Iinclude -I"C:/Users/arthu/Downloads/raylib-6.0_win64_mingw-w64/raylib-6.0_win64_mingw-w64/include" -L"C:/Users/arthu/Downloads/raylib-6.0_win64_mingw-w64/raylib-6.0_win64_mingw-w64/lib" -lraylib -lopengl32 -lgdi32 -lwinmm
-.\build\teapruma.exe
-```
 
 ## Estrutura do Projeto
 
