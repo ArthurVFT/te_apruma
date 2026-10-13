@@ -18,19 +18,29 @@ O jogo nasceu de um hackathon sobre mudanças climáticas, que discutiu o papel 
 - **Fase 4 - Evacuação na Encosta** (em desenvolvimento): Conduza os moradores até o abrigo antes de um deslizamento.
 - **Fase 5 - Coleta Seletiva** (em desenvolvimento): Direcione os resíduos para a lixeira correta.
 
-## Como Compilar
+## Como Compilar e Rodar
 
-Este projeto utiliza [Raylib](https://www.raylib.com/) e [w64devkit](https://github.com/skeeto/w64devkit).
+Você vai precisar do **[Raylib](https://www.raylib.com/)** e do **[w64devkit](https://github.com/skeeto/w64devkit)** configurados no seu ambiente.
 
-### Usando Make
+### Opção 1: Usando Make
+
+No terminal, na raiz do projeto:
 
 ```powershell
 make
 make run
 ```
 
-### Compilação Manual (PowerShell)
+### Opção 2: Compilação manual
 
+Substitua `<caminho-para-raylib-include>` e `<caminho-para-raylib-lib>` pelos caminhos corretos na sua máquina.
+
+```powershell
+gcc src/*.c -o build/teapruma.exe -Iinclude -I"<caminho-para-raylib-include>" -L"<caminho-para-raylib-lib>" -lraylib -lopengl32 -lgdi32 -lwinmm
+.\build\teapruma.exe
+```
+
+> Dica: Se você já tem o Makefile ajustado com os caminhos certos, a opção 1 é a mais prática.
 
 ## Estrutura do Projeto
 
