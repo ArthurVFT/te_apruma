@@ -17,11 +17,11 @@ $(TARGET): $(OBJECTS)
 	$(CC) $(OBJECTS) -o $(TARGET) $(LIBS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-	@if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)
 	$(CC) -c $< -o $@ $(INCLUDES)
 
 clean:
-	del /Q $(BUILD_DIR)\*.o $(BUILD_DIR)\*.exe 2>nul || true
+	rm -f $(BUILD_DIR)/*.o $(BUILD_DIR)/*.exe
 
 run: all
 	$(TARGET)
