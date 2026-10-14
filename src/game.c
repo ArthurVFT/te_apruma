@@ -1,76 +1,124 @@
-/*
- * game.c - Implementacao do modulo principal: janela, loop e troca de telas.
- */
+/* game.c - janela, loop principal e troca de telas. */
 
 #include "game.h"
-#include "config.h"  /* SCREEN_W / SCREEN_H / GROUND_Y (tamanho da janela). */
+#include "config.h"
 #include "player.h"
-#include "world.h"   /* Logica da Fase 1 (entidades, pontos, tempo). */
+#include "world.h"
+#include "ranking.h"
 
-/*
- * static = a variavel "e privada" deste arquivo. Ninguem de fora consegue
- * acessar diretamente; so as funcoes daqui de dentro.
- *
- * "state" guarda em qual tela o jogo esta. Comeca no MENU.
- * O tamanho da janela agora vem do config.h (SCREEN_W x SCREEN_H).
- */
+/* Em qual tela o jogo esta. Comeca no menu. */
 static GameState state = GAME_STATE_MENU;
 
-/*
- * DrawTextCentered - desenha um texto centralizado na horizontal.
- * MeasureText devolve a largura, em pixels, que o texto vai ocupar; entao
- * (SCREEN_W - largura) / 2 centraliza em QUALQUER resolucao.
- */
+/* --- Menu principal --- */
+
+#define MENU_ITEMS 2
+
+static const char* menuLabels[MENU_ITEMS] = { "JOGAR", "RANKING" };
+static const int   menuY[MENU_ITEMS]      = { 260, 340 };
+static int menuChoice = 0;   /* opcao destacada: 0 = Jogar, 1 = Ranking */
+
+/* Retangulo (caixa) de uma opcao do menu, centralizado na tela.
+ * Usado tanto para desenhar quanto para detectar o mouse (mesma area). */
+static Rectangle MenuButtonBox(int index) {
+    const int fontSize = 30;
+    float width  = MeasureText(menuLabels[index], fontSize) + 80;
+    float height = fontSize + 30;
+    return (Rectangle){ (SCREEN_W - width) / 2.0f, (float)menuY[index], width, height };
+}
+
+/* Executa a acao da opcao escolhida. */
+static void ActivateMenuItem(int index) {
+    if (index == 0) {
+        WorldReset();
+        state = GAME_STATE_PLAYING;
+    } else {
+        state = GAME_STATE_RANKING;
+    }
+}
+
+/* Desenha um texto centralizado na horizontal, em qualquer resolucao. */
 static void DrawTextCentered(const char* text, int y, int fontSize, Color color) {
     int width = MeasureText(text, fontSize);
     DrawText(text, (SCREEN_W - width) / 2, y, fontSize, color);
 }
 
-/*
- * GameInit - chamada uma vez, no inicio.
- * Abre a janela do Raylib, fixa o limite de quadros por segundo e prepara
- * o jogador.
- */
-void GameInit(void) {
-    InitWindow(SCREEN_W, SCREEN_H, "Te Apruma!"); /* Cria a janela grafica. */
-    SetTargetFPS(60);                             /* Tenta rodar a 60 FPS.  */
-    PlayerInit();                                 /* Prepara o jogador.     */
-    WorldInit();                                  /* Prepara a Fase 1.      */
+/* Desenha o menu com a opcao selecionada (borda dourada que pisca). */
+static void DrawMenu(void) {
+    const int fontSize = 30;
+
+    DrawTextCentered("TE APRUMA!", 90, 50, DARKGREEN);
+
+    for (int i = 0; i < MENU_ITEMS; i++) {
+        Rectangle box = MenuButtonBox(i);
+        bool selected = (i == menuChoice);
+
+        int textW = MeasureText(menuLabels[i], fontSize);
+        DrawText(menuLabels[i],
+                 (int)(box.x + (box.width - textW) / 2.0f),
+                 (int)(box.y + (box.height - fontSize) / 2.0f),
+                 fontSize, selected ? GOLD : DARKGRAY);
+
+        /* A opcao selecionada pisca: aparece em metade dos "meio-segundos". */
+        if (selected && ((int)(GetTime() * 2.0)) % 2 == 0) {
+            DrawRectangleLinesEx(box, 4, GOLD);
+        }
+    }
+
+    DrawTextCentered("Setas/WASD ou mouse para escolher", 460, 16, GRAY);
+    DrawTextCentered("ENTER ou clique para confirmar", 485, 16, GRAY);
 }
 
-/*
- * GameRun - o "motor" do jogo.
- * Um loop infinito que so para quando a janela e fechada (WindowShouldClose).
- * A cada repeticao (a cada quadro) ele faz duas etapas:
- *   1) Update: ler teclas e atualizar o estado (o que mudou no jogo).
- *   2) Draw:   desenhar a cena atual na tela.
- */
+void GameInit(void) {
+    InitWindow(SCREEN_W, SCREEN_H, "Te Apruma!");
+    SetTargetFPS(60);
+    PlayerInit();
+    WorldInit();
+    RankingInit();
+}
+
 void GameRun(void) {
-    while (!WindowShouldClose()) {   /* WindowShouldClose = true ao clicar no X ou ESC. */
+    while (!WindowShouldClose()) {
         /* ---------------- UPDATE (logica) ---------------- */
         switch (state) {
-            case GAME_STATE_MENU:
-                /* No menu, ENTER comeca um jogo novo (zera pontos e vidas). */
-                if (IsKeyPressed(KEY_ENTER)) {
-                    WorldReset();
-                    state = GAME_STATE_PLAYING;
+            case GAME_STATE_MENU: {
+                /* Teclado (com wrap: do fim volta ao comeco). */
+                if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W))
+                    menuChoice = (menuChoice + MENU_ITEMS - 1) % MENU_ITEMS;
+                if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S))
+                    menuChoice = (menuChoice + 1) % MENU_ITEMS;
+
+                /* Mouse: passar por cima destaca, clicar confirma. */
+                Vector2 mouse = GetMousePosition();
+                for (int i = 0; i < MENU_ITEMS; i++) {
+                    if (CheckCollisionPointRec(mouse, MenuButtonBox(i))) {
+                        menuChoice = i;
+                        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                            ActivateMenuItem(i);
+                        }
+                    }
                 }
+
+                /* Teclado: ENTER confirma a opcao destacada. */
+                if (IsKeyPressed(KEY_ENTER)) ActivateMenuItem(menuChoice);
+                if (IsKeyPressed(KEY_R))      state = GAME_STATE_RANKING;   /* atalho */
                 break;
+            }
 
             case GAME_STATE_PLAYING:
-                PlayerUpdate();                          /* Move o jogador conforme as teclas. */
-                WorldUpdate();                           /* Cria/move entidades, colisao e tempo. */
-                if (WorldIsFinished()) {                 /* O tempo acabou? */
-                    /* Venceu se terminou com pontuacao positiva. */
-                    state = WorldDidWin() ? GAME_STATE_PHASE_COMPLETE : GAME_STATE_GAMEOVER;
+                PlayerUpdate();
+                WorldUpdate();
+                if (WorldIsFinished()) {
+                    /* Ao terminar, registra a pontuacao no ranking. */
+                    RankingAdd(WorldGetScore(), WorldGetBagsCollected());
+                    state = WorldDidWin() ? GAME_STATE_PHASE_COMPLETE
+                                          : GAME_STATE_GAMEOVER;
                 }
-                if (IsKeyPressed(KEY_P)) {               /* P pausa.                           */
+                if (IsKeyPressed(KEY_P)) {
                     state = GAME_STATE_PAUSED;
                 }
                 break;
 
             case GAME_STATE_PAUSED:
-                /* Na pausa, P ou ENTER voltam ao jogo. */
                 if (IsKeyPressed(KEY_P) || IsKeyPressed(KEY_ENTER)) {
                     state = GAME_STATE_PLAYING;
                 }
@@ -78,8 +126,8 @@ void GameRun(void) {
 
             case GAME_STATE_PHASE_COMPLETE:
             case GAME_STATE_GAMEOVER:
+            case GAME_STATE_RANKING:
             case GAME_STATE_CREDITS:
-                /* Nessas telas, ENTER volta pro menu. */
                 if (IsKeyPressed(KEY_ENTER)) {
                     state = GAME_STATE_MENU;
                 }
@@ -87,78 +135,79 @@ void GameRun(void) {
         }
 
         /* ---------------- DRAW (desenho) ---------------- */
-        BeginDrawing();                 /* Comeca um novo quadro de desenho. */
-        ClearBackground(RAYWHITE);      /* Pinta o fundo de branco.          */
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
 
         switch (state) {
             case GAME_STATE_MENU:
-                DrawTextCentered("TE APRUMA!", 150, 50, DARKGREEN);
-                DrawTextCentered("Pressione ENTER para Jogar", 220, 20, DARKGRAY);
-                DrawTextCentered("Agente Comunitario - PIF 2026.2", 280, 16, GRAY);
-                DrawTextCentered("Setas ou WASD para mover  |  P para pausar", 320, 16, GRAY);
-                DrawTextCentered("Colete as sacolas antes do cachorro!", 345, 16, GRAY);
+                DrawMenu();
                 break;
 
             case GAME_STATE_PLAYING:
-                /* Calcada: faixa cinza na parte de baixo (posicao vem do config.h). */
                 DrawRectangle(0, GROUND_Y, SCREEN_W, GROUND_HEIGHT, LIGHTGRAY);
-
-                WorldDraw();                                        /* Desenha sacolas e cachorros.      */
-                PlayerDraw();                                       /* Desenha o jogador.                */
+                WorldDraw();
+                PlayerDraw();
 
                 DrawText("Fase 1 - Rua Limpa", 20, 20, 30, DARKBLUE);
-                /* HUD: TextFormat monta a string com os numeros (tipo printf). */
                 DrawText(TextFormat("Pontos: %d", WorldGetScore()), 20, 60, 20, DARKGRAY);
                 DrawText(TextFormat("Tempo: %.0f s", WorldGetTimeLeft()), 20, 85, 20, RED);
-                DrawText("Pegue as sacolas! Cuidado com o cachorro.", 20, GROUND_Y - 24, 16, GRAY);
-
-                DrawText("P - Pausar", SCREEN_W - 120, 20, 16, GRAY); /* Texto alinhado pela direita. */
+                DrawText("P - Pausar", SCREEN_W - 120, 20, 16, GRAY);
                 break;
 
             case GAME_STATE_PAUSED:
-                DrawTextCentered("PAUSADO", 200, 40, DARKGRAY);
-                DrawTextCentered("Pressione P ou ENTER para continuar", 250, 20, GRAY);
+                DrawTextCentered("PAUSADO", 300, 40, DARKGRAY);
+                DrawTextCentered("P ou ENTER para continuar", 350, 20, GRAY);
                 break;
 
             case GAME_STATE_PHASE_COMPLETE:
-                DrawTextCentered("FASE 1 CONCLUIDA!", 150, 40, DARKGREEN);
-                DrawTextCentered(TextFormat("Pontuacao: %d", WorldGetScore()), 210, 26, DARKGRAY);
-                DrawTextCentered("Voce esta pronto para a proxima fase!", 255, 20, GRAY);
-                DrawTextCentered("ENTER para voltar ao menu", 300, 20, DARKGRAY);
+                DrawTextCentered("FASE 1 CONCLUIDA!", 250, 40, DARKGREEN);
+                DrawTextCentered(TextFormat("Pontuacao: %d", WorldGetScore()), 310, 26, DARKGRAY);
+                DrawTextCentered("ENTER para voltar ao menu", 370, 20, DARKGRAY);
                 break;
 
             case GAME_STATE_GAMEOVER:
-                DrawTextCentered("FASE FALHOU", 150, 40, RED);
-                /* Mostra a pontuacao final alcancada na partida. */
-                DrawTextCentered(TextFormat("Pontuacao final: %d", WorldGetScore()), 210, 24, DARKGRAY);
-                DrawTextCentered("Termine a fase com pontos positivos!", 255, 20, GRAY);
-                DrawTextCentered("ENTER para voltar ao menu", 300, 20, DARKGRAY);
+                DrawTextCentered("FASE FALHOU", 250, 40, RED);
+                DrawTextCentered(TextFormat("Pontuacao final: %d", WorldGetScore()), 310, 24, DARKGRAY);
+                DrawTextCentered("ENTER para voltar ao menu", 370, 20, DARKGRAY);
+                break;
+
+            case GAME_STATE_RANKING:
+                DrawTextCentered("RANKING - MELHORES PONTUACOES", 70, 30, DARKBLUE);
+
+                if (RankingCount() == 0) {
+                    DrawTextCentered("Nenhuma pontuacao registrada ainda.", 300, 22, GRAY);
+                } else {
+                    /* Percorre as LINHAS da matriz e mostra cada posicao. */
+                    for (int i = 0; i < RankingCount(); i++) {
+                        int pontos  = RankingGet(i, RANKING_POINTS);
+                        int sacolas = RankingGet(i, RANKING_BAGS);
+
+                        DrawTextCentered(
+                            TextFormat("%d.  %d pontos   (%d sacolas)", i + 1, pontos, sacolas),
+                            160 + i * 50, 26, DARKGRAY
+                        );
+                    }
+                }
+
+                DrawTextCentered("ENTER para voltar ao menu", 620, 20, GRAY);
                 break;
 
             case GAME_STATE_CREDITS:
-                DrawTextCentered("CREDITOS", 150, 40, DARKGRAY);
-                DrawTextCentered("Projeto PIF 2026.2 - CESAR School", 220, 20, DARKGRAY);
-                DrawTextCentered("ENTER para voltar ao menu", 280, 20, DARKGRAY);
+                DrawTextCentered("CREDITOS", 250, 40, DARKGRAY);
+                DrawTextCentered("Projeto PIF 2026.2 - CESAR School", 320, 20, DARKGRAY);
+                DrawTextCentered("ENTER para voltar ao menu", 380, 20, DARKGRAY);
                 break;
         }
-        EndDrawing();   /* Finaliza o quadro e mostra tudo na tela. */
+        EndDrawing();
     }
 }
 
-/*
- * GameClose - chamada depois que o loop termina.
- * Fecha o jogador e a janela do Raylib, liberando recursos.
- */
 void GameClose(void) {
-    PlayerClose();   /* Libera o que o jogador eventualmente alocou. */
-    WorldClose();    /* Libera as entidades da Fase 1 (malloc/free). */
-    CloseWindow();   /* Fecha a janela e desliga o Raylib.           */
+    PlayerClose();
+    WorldClose();
+    CloseWindow();
 }
 
-/*
- * GameGetState - permite que outros modulos saibam em que estado o jogo esta.
- * "return" devolve a copia do valor atual.
- */
 GameState GameGetState(void) {
     return state;
 }
