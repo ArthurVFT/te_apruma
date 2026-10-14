@@ -1,47 +1,32 @@
-/*
- * world.h - Cabecalho do modulo "mundo" (a logica da fase em si).
- *
- * O World e o "gerente" da Fase 1 - Rua Limpa. Ele:
- *   - guarda uma LISTA ENCADEADA de entidades (sacolas e cachorros);
- *   - cria sacolas em posicoes ALEATORIAS (elas ficam paradas);
- *   - cria cachorros que perseguem a sacola mais proxima;
- *   - controla a colisao (jogador pega sacola / cachorro come sacola);
- *   - controla o TEMPO da fase e decide se o jogador venceu.
- *
- * Repare que o World NAO le teclado do jogador: isso continua sendo
- * responsabilidade de game.c/player.c. Aqui cuidamos do "mundo".
- */
-
 #ifndef WORLD_H
 #define WORLD_H
 
-#include "raylib.h"    /* Vector2, Color, Rectangle... */
-#include "list.h"      /* O tipo List.                 */
-#include <stdbool.h>   /* bool (true/false).           */
+#include "raylib.h"
+#include "list.h"
+#include <stdbool.h>
 
-/*
- * struct World - o estado completo da fase.
- */
+/* Estado completo da Fase 1. */
 typedef struct {
-    List* entities;      /* Lista encadeada de Entity* (as coisas em cena). */
-    int   score;         /* Pontuacao: +1 por sacola, -1 se o cachorro comer. */
-    float timeLeft;      /* Segundos restantes da fase (contagem regressiva). */
-    float bagTimer;      /* Segundos ate criar a proxima sacola.            */
-    float dogTimer;      /* Segundos ate criar o proximo cachorro.          */
-    bool  finished;      /* true quando o tempo acabou.                     */
-    bool  won;           /* Resultado (valido quando finished): score > 0?  */
+    List* entities;      /* lista de Entity* em cena                     */
+    int   score;         /* +1 por sacola coletada, -1 por sacola comida */
+    int   bagsCollected; /* quantas sacolas o jogador pegou (sem descontos) */
+    float timeLeft;      /* segundos restantes                            */
+    float bagTimer;      /* espera ate a proxima sacola                   */
+    float dogTimer;      /* espera ate o proximo cachorro                 */
+    bool  finished;      /* true quando o tempo acabou                    */
+    bool  won;           /* resultado (valido se finished): score > 0 ?   */
 } World;
 
-/* Funcoes do modulo (implementadas em world.c). */
-void WorldInit(void);          /* Cria a lista e zera tudo (chamar uma vez). */
-void WorldReset(void);         /* Reinicia a fase (limpa entidades e stats). */
-void WorldUpdate(void);        /* Spawn + movimento + colisao + tempo.        */
-void WorldDraw(void);          /* Desenha todas as entidades.                */
-void WorldClose(void);         /* Libera a lista e as entidades.             */
+void WorldInit(void);
+void WorldReset(void);
+void WorldUpdate(void);
+void WorldDraw(void);
+void WorldClose(void);
 
-int   WorldGetScore(void);     /* Leitura da pontuacao atual.                */
-float WorldGetTimeLeft(void);  /* Segundos restantes da fase.                */
-bool  WorldIsFinished(void);   /* true se o tempo acabou.                    */
-bool  WorldDidWin(void);       /* true se o jogador venceu a fase.           */
+int   WorldGetScore(void);
+int   WorldGetBagsCollected(void);
+float WorldGetTimeLeft(void);
+bool  WorldIsFinished(void);
+bool  WorldDidWin(void);
 
-#endif /* WORLD_H */
+#endif
