@@ -3,7 +3,8 @@
  */
 
 #include "player.h"
-#include <math.h>   /* sqrtf (raiz quadrada) - usada na normalizacao da diagonal. */
+#include "config.h"  /* SCREEN_W / SCREEN_H / GROUND_Y. */
+#include <math.h>    /* sqrtf (raiz quadrada) - usada na normalizacao da diagonal. */
 
 /*
  * Unica instancia do jogador no jogo.
@@ -18,8 +19,11 @@ static Player player = {0};
  * chamada de "compound literal": cria um valor temporario e copia pra variavel.
  */
 void PlayerInit(void) {
-    player.position = (Vector2){400, 380};   /* Comeca mais ou menos no centro da largura. */
     player.size = (Vector2){30, 40};         /* 30 pixels de largura, 40 de altura.       */
+    player.position = (Vector2){             /* Comeca centralizado e em cima da calcada. */
+        (SCREEN_W - player.size.x) / 2.0f,   /* centro horizontal                         */
+        GROUND_Y - player.size.y             /* em pe sobre o chao                        */
+    };
     player.velocity = (Vector2){0, 0};       /* Parado.                                   */
     player.color = BLUE;                     /* Cor azul.                                 */
     player.speed = 300.0f;                   /* 300 pixels por segundo. O "f" indica float. */
@@ -68,13 +72,13 @@ void PlayerUpdate(void) {
         player.position.y += dir.y * player.speed * delta;
     }
 
-    /* Limites nas bordas: 0..800 na horizontal e 0..450 na vertical.
+    /* Limitar nas bordas: usa SCREEN_W x SCREEN_H do config.h.
      * O canto superior esquerdo e "position"; o fundo/direita e "position + size". */
     if (player.position.x < 0) player.position.x = 0;
-    if (player.position.x + player.size.x > 800) player.position.x = 800 - player.size.x;
+    if (player.position.x + player.size.x > SCREEN_W) player.position.x = SCREEN_W - player.size.x;
 
     if (player.position.y < 0) player.position.y = 0;
-    if (player.position.y + player.size.y > 450) player.position.y = 450 - player.size.y;
+    if (player.position.y + player.size.y > SCREEN_H) player.position.y = SCREEN_H - player.size.y;
 }
 
 /*
