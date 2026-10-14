@@ -50,9 +50,10 @@ void GameRun(void) {
 
             case GAME_STATE_PLAYING:
                 PlayerUpdate();                          /* Move o jogador conforme as teclas. */
-                WorldUpdate();                           /* Cria/move entidades e checa colisao. */
-                if (WorldIsGameOver()) {                 /* Acabaram as vidas? */
-                    state = GAME_STATE_GAMEOVER;
+                WorldUpdate();                           /* Cria/move entidades, colisao e tempo. */
+                if (WorldIsFinished()) {                 /* O tempo acabou? */
+                    /* Venceu se terminou com pontuacao positiva. */
+                    state = WorldDidWin() ? GAME_STATE_PHASE_COMPLETE : GAME_STATE_GAMEOVER;
                 }
                 if (IsKeyPressed(KEY_P)) {               /* P pausa.                           */
                     state = GAME_STATE_PAUSED;
@@ -66,9 +67,10 @@ void GameRun(void) {
                 }
                 break;
 
+            case GAME_STATE_PHASE_COMPLETE:
             case GAME_STATE_GAMEOVER:
             case GAME_STATE_CREDITS:
-                /* Nos dois casos, ENTER volta pro menu. */
+                /* Nessas telas, ENTER volta pro menu. */
                 if (IsKeyPressed(KEY_ENTER)) {
                     state = GAME_STATE_MENU;
                 }
@@ -85,7 +87,8 @@ void GameRun(void) {
                 DrawText("TE APRUMA!", 250, 150, 50, DARKGREEN);
                 DrawText("Pressione ENTER para Jogar", 220, 220, 20, DARKGRAY);
                 DrawText("Agente Comunitario - PIF 2026.2", 200, 280, 16, GRAY);
-                DrawText("Setas ou A/D para mover  |  P para pausar", 180, 320, 16, GRAY);
+                DrawText("Setas ou WASD para mover  |  P para pausar", 170, 320, 16, GRAY);
+                DrawText("Colete as sacolas antes do cachorro!", 200, 345, 16, GRAY);
                 break;
 
             case GAME_STATE_PLAYING:
@@ -98,7 +101,8 @@ void GameRun(void) {
                 DrawText("Fase 1 - Rua Limpa", 20, 20, 30, DARKBLUE);
                 /* HUD: TextFormat monta a string com os numeros (tipo printf). */
                 DrawText(TextFormat("Pontos: %d", WorldGetScore()), 20, 60, 20, DARKGRAY);
-                DrawText(TextFormat("Vidas: %d", WorldGetLives()), 20, 85, 20, RED);
+                DrawText(TextFormat("Tempo: %.0f s", WorldGetTimeLeft()), 20, 85, 20, RED);
+                DrawText("Pegue as sacolas! Cuidado com o cachorro.", 20, 420 - 24, 16, GRAY);
 
                 DrawText("P - Pausar", screenWidth - 120, 20, 16, GRAY); /* Texto alinhado pela direita. */
                 break;
@@ -108,11 +112,19 @@ void GameRun(void) {
                 DrawText("Pressione P ou ENTER para continuar", 180, 250, 20, GRAY);
                 break;
 
+            case GAME_STATE_PHASE_COMPLETE:
+                DrawText("FASE 1 CONCLUIDA!", 200, 150, 40, DARKGREEN);
+                DrawText(TextFormat("Pontuacao: %d", WorldGetScore()), 300, 210, 26, DARKGRAY);
+                DrawText("Voce esta pronto para a proxima fase!", 210, 255, 20, GRAY);
+                DrawText("ENTER para voltar ao menu", 220, 300, 20, DARKGRAY);
+                break;
+
             case GAME_STATE_GAMEOVER:
-                DrawText("GAME OVER", 280, 170, 40, RED);
+                DrawText("FASE FALHOU", 250, 150, 40, RED);
                 /* Mostra a pontuacao final alcancada na partida. */
-                DrawText(TextFormat("Pontuacao final: %d", WorldGetScore()), 280, 220, 22, DARKGRAY);
-                DrawText("ENTER para voltar ao menu", 220, 260, 20, DARKGRAY);
+                DrawText(TextFormat("Pontuacao final: %d", WorldGetScore()), 270, 210, 24, DARKGRAY);
+                DrawText("Termine a fase com pontos positivos!", 190, 255, 20, GRAY);
+                DrawText("ENTER para voltar ao menu", 220, 300, 20, DARKGRAY);
                 break;
 
             case GAME_STATE_CREDITS:
