@@ -13,13 +13,10 @@
  */
 
 #include "world.h"
+#include "config.h"    /* SCREEN_W / SCREEN_H (tamanho da janela). */
 #include "entity.h"    /* Entity, EntityCreate, EntityUpdate, EntityDraw, EntityDestroy */
 #include "player.h"    /* PlayerGet, la de player.c                                     */
 #include <math.h>      /* sqrtf - usada na direcao do cachorro.                          */
-
-/* Dimensoes da janela (as mesmas definidas em game.c). */
-#define SCREEN_W 800
-#define SCREEN_H 450
 
 /* Ajustes de dificuldade - mexa aqui para balancear a fase. */
 #define PHASE_DURATION   30.0f   /* Duracao da fase, em segundos.              */

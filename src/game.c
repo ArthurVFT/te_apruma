@@ -3,19 +3,28 @@
  */
 
 #include "game.h"
+#include "config.h"  /* SCREEN_W / SCREEN_H / GROUND_Y (tamanho da janela). */
 #include "player.h"
-#include "world.h"   /* Logica da Fase 1 (entidades, pontos, vidas). */
+#include "world.h"   /* Logica da Fase 1 (entidades, pontos, tempo). */
 
 /*
  * static = a variavel "e privada" deste arquivo. Ninguem de fora consegue
  * acessar diretamente; so as funcoes daqui de dentro.
  *
  * "state" guarda em qual tela o jogo esta. Comeca no MENU.
- * "screenWidth"/"screenHeight" definem o tamanho da janela (800x450 pixels).
+ * O tamanho da janela agora vem do config.h (SCREEN_W x SCREEN_H).
  */
 static GameState state = GAME_STATE_MENU;
-static int screenWidth = 800;
-static int screenHeight = 450;
+
+/*
+ * DrawTextCentered - desenha um texto centralizado na horizontal.
+ * MeasureText devolve a largura, em pixels, que o texto vai ocupar; entao
+ * (SCREEN_W - largura) / 2 centraliza em QUALQUER resolucao.
+ */
+static void DrawTextCentered(const char* text, int y, int fontSize, Color color) {
+    int width = MeasureText(text, fontSize);
+    DrawText(text, (SCREEN_W - width) / 2, y, fontSize, color);
+}
 
 /*
  * GameInit - chamada uma vez, no inicio.
@@ -23,10 +32,10 @@ static int screenHeight = 450;
  * o jogador.
  */
 void GameInit(void) {
-    InitWindow(screenWidth, screenHeight, "Te Apruma!"); /* Cria a janela grafica. */
-    SetTargetFPS(60);                                    /* Tenta rodar a 60 FPS.  */
-    PlayerInit();                                        /* Prepara o jogador.     */
-    WorldInit();                                         /* Prepara a Fase 1.      */
+    InitWindow(SCREEN_W, SCREEN_H, "Te Apruma!"); /* Cria a janela grafica. */
+    SetTargetFPS(60);                             /* Tenta rodar a 60 FPS.  */
+    PlayerInit();                                 /* Prepara o jogador.     */
+    WorldInit();                                  /* Prepara a Fase 1.      */
 }
 
 /*
@@ -83,17 +92,16 @@ void GameRun(void) {
 
         switch (state) {
             case GAME_STATE_MENU:
-                /* DrawText(texto, x, y, tamanho, cor) */
-                DrawText("TE APRUMA!", 250, 150, 50, DARKGREEN);
-                DrawText("Pressione ENTER para Jogar", 220, 220, 20, DARKGRAY);
-                DrawText("Agente Comunitario - PIF 2026.2", 200, 280, 16, GRAY);
-                DrawText("Setas ou WASD para mover  |  P para pausar", 170, 320, 16, GRAY);
-                DrawText("Colete as sacolas antes do cachorro!", 200, 345, 16, GRAY);
+                DrawTextCentered("TE APRUMA!", 150, 50, DARKGREEN);
+                DrawTextCentered("Pressione ENTER para Jogar", 220, 20, DARKGRAY);
+                DrawTextCentered("Agente Comunitario - PIF 2026.2", 280, 16, GRAY);
+                DrawTextCentered("Setas ou WASD para mover  |  P para pausar", 320, 16, GRAY);
+                DrawTextCentered("Colete as sacolas antes do cachorro!", 345, 16, GRAY);
                 break;
 
             case GAME_STATE_PLAYING:
-                /* Chao: faixa cinza na parte de baixo da tela (visual). */
-                DrawRectangle(0, 420, screenWidth, screenHeight - 420, LIGHTGRAY);
+                /* Calcada: faixa cinza na parte de baixo (posicao vem do config.h). */
+                DrawRectangle(0, GROUND_Y, SCREEN_W, GROUND_HEIGHT, LIGHTGRAY);
 
                 WorldDraw();                                        /* Desenha sacolas e cachorros.      */
                 PlayerDraw();                                       /* Desenha o jogador.                */
@@ -102,35 +110,35 @@ void GameRun(void) {
                 /* HUD: TextFormat monta a string com os numeros (tipo printf). */
                 DrawText(TextFormat("Pontos: %d", WorldGetScore()), 20, 60, 20, DARKGRAY);
                 DrawText(TextFormat("Tempo: %.0f s", WorldGetTimeLeft()), 20, 85, 20, RED);
-                DrawText("Pegue as sacolas! Cuidado com o cachorro.", 20, 420 - 24, 16, GRAY);
+                DrawText("Pegue as sacolas! Cuidado com o cachorro.", 20, GROUND_Y - 24, 16, GRAY);
 
-                DrawText("P - Pausar", screenWidth - 120, 20, 16, GRAY); /* Texto alinhado pela direita. */
+                DrawText("P - Pausar", SCREEN_W - 120, 20, 16, GRAY); /* Texto alinhado pela direita. */
                 break;
 
             case GAME_STATE_PAUSED:
-                DrawText("PAUSADO", 320, 200, 40, DARKGRAY);
-                DrawText("Pressione P ou ENTER para continuar", 180, 250, 20, GRAY);
+                DrawTextCentered("PAUSADO", 200, 40, DARKGRAY);
+                DrawTextCentered("Pressione P ou ENTER para continuar", 250, 20, GRAY);
                 break;
 
             case GAME_STATE_PHASE_COMPLETE:
-                DrawText("FASE 1 CONCLUIDA!", 200, 150, 40, DARKGREEN);
-                DrawText(TextFormat("Pontuacao: %d", WorldGetScore()), 300, 210, 26, DARKGRAY);
-                DrawText("Voce esta pronto para a proxima fase!", 210, 255, 20, GRAY);
-                DrawText("ENTER para voltar ao menu", 220, 300, 20, DARKGRAY);
+                DrawTextCentered("FASE 1 CONCLUIDA!", 150, 40, DARKGREEN);
+                DrawTextCentered(TextFormat("Pontuacao: %d", WorldGetScore()), 210, 26, DARKGRAY);
+                DrawTextCentered("Voce esta pronto para a proxima fase!", 255, 20, GRAY);
+                DrawTextCentered("ENTER para voltar ao menu", 300, 20, DARKGRAY);
                 break;
 
             case GAME_STATE_GAMEOVER:
-                DrawText("FASE FALHOU", 250, 150, 40, RED);
+                DrawTextCentered("FASE FALHOU", 150, 40, RED);
                 /* Mostra a pontuacao final alcancada na partida. */
-                DrawText(TextFormat("Pontuacao final: %d", WorldGetScore()), 270, 210, 24, DARKGRAY);
-                DrawText("Termine a fase com pontos positivos!", 190, 255, 20, GRAY);
-                DrawText("ENTER para voltar ao menu", 220, 300, 20, DARKGRAY);
+                DrawTextCentered(TextFormat("Pontuacao final: %d", WorldGetScore()), 210, 24, DARKGRAY);
+                DrawTextCentered("Termine a fase com pontos positivos!", 255, 20, GRAY);
+                DrawTextCentered("ENTER para voltar ao menu", 300, 20, DARKGRAY);
                 break;
 
             case GAME_STATE_CREDITS:
-                DrawText("CREDITOS", 320, 150, 40, DARKGRAY);
-                DrawText("Projeto PIF 2026.2 - CESAR School", 200, 220, 20, DARKGRAY);
-                DrawText("ENTER para voltar ao menu", 220, 280, 20, DARKGRAY);
+                DrawTextCentered("CREDITOS", 150, 40, DARKGRAY);
+                DrawTextCentered("Projeto PIF 2026.2 - CESAR School", 220, 20, DARKGRAY);
+                DrawTextCentered("ENTER para voltar ao menu", 280, 20, DARKGRAY);
                 break;
         }
         EndDrawing();   /* Finaliza o quadro e mostra tudo na tela. */
