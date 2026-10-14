@@ -25,7 +25,8 @@ typedef enum {
     GAME_STATE_MENU,      /* Tela inicial com o titulo.            */
     GAME_STATE_PLAYING,   /* Jogo rodando de verdade (Fase 1).     */
     GAME_STATE_PAUSED,    /* Jogo congelado.                       */
-    GAME_STATE_GAMEOVER,  /* Tela de fim de jogo.                  */
+    GAME_STATE_PHASE_COMPLETE, /* Fase vencida (score positivo).   */
+    GAME_STATE_GAMEOVER,  /* Tela de fim de jogo (fracasso).       */
     GAME_STATE_CREDITS    /* Tela de creditos.                     */
 } GameState;
 
