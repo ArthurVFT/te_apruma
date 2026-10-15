@@ -1,4 +1,4 @@
-/* game.c - janela, loop principal e troca de telas. */
+// game.c - janela, loop principal e troca de telas.
 
 #include "game.h"
 #include "config.h"
@@ -6,19 +6,19 @@
 #include "world.h"
 #include "ranking.h"
 
-/* Em qual tela o jogo esta. Comeca no menu. */
+// Em qual tela o jogo esta. Comeca no menu.
 static GameState state = GAME_STATE_MENU;
 
-/* --- Menu principal --- */
+// --- Menu principal ---
 
 #define MENU_ITEMS 2
 
 static const char* menuLabels[MENU_ITEMS] = { "JOGAR", "RANKING" };
 static const int   menuY[MENU_ITEMS]      = { 260, 340 };
-static int menuChoice = 0;   /* opcao destacada: 0 = Jogar, 1 = Ranking */
+static int menuChoice = 0;   // opcao destacada: 0 = Jogar, 1 = Ranking
 
-/* Retangulo (caixa) de uma opcao do menu, centralizado na tela.
- * Usado tanto para desenhar quanto para detectar o mouse (mesma area). */
+// Retangulo (caixa) de uma opcao do menu, centralizado na tela.
+// Usado tanto para desenhar quanto para detectar o mouse (mesma area).
 static Rectangle MenuButtonBox(int index) {
     const int fontSize = 30;
     float width  = MeasureText(menuLabels[index], fontSize) + 80;
@@ -26,7 +26,7 @@ static Rectangle MenuButtonBox(int index) {
     return (Rectangle){ (SCREEN_W - width) / 2.0f, (float)menuY[index], width, height };
 }
 
-/* Executa a acao da opcao escolhida. */
+// Executa a acao da opcao escolhida.
 static void ActivateMenuItem(int index) {
     if (index == 0) {
         WorldReset();
@@ -36,13 +36,13 @@ static void ActivateMenuItem(int index) {
     }
 }
 
-/* Desenha um texto centralizado na horizontal, em qualquer resolucao. */
+// Desenha um texto centralizado na horizontal, em qualquer resolucao.
 static void DrawTextCentered(const char* text, int y, int fontSize, Color color) {
     int width = MeasureText(text, fontSize);
     DrawText(text, (SCREEN_W - width) / 2, y, fontSize, color);
 }
 
-/* Desenha o menu com a opcao selecionada (borda dourada que pisca). */
+// Desenha o menu com a opcao selecionada (borda dourada que pisca).
 static void DrawMenu(void) {
     const int fontSize = 30;
 
@@ -58,7 +58,7 @@ static void DrawMenu(void) {
                  (int)(box.y + (box.height - fontSize) / 2.0f),
                  fontSize, selected ? GOLD : DARKGRAY);
 
-        /* A opcao selecionada pisca: aparece em metade dos "meio-segundos". */
+        // A opcao selecionada pisca: aparece em metade dos "meio-segundos".
         if (selected && ((int)(GetTime() * 2.0)) % 2 == 0) {
             DrawRectangleLinesEx(box, 4, GOLD);
         }
@@ -78,16 +78,16 @@ void GameInit(void) {
 
 void GameRun(void) {
     while (!WindowShouldClose()) {
-        /* ---------------- UPDATE (logica) ---------------- */
+        // ---------------- UPDATE (logica) ----------------
         switch (state) {
             case GAME_STATE_MENU: {
-                /* Teclado (com wrap: do fim volta ao comeco). */
+                // Teclado (com wrap: do fim volta ao comeco).
                 if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W))
                     menuChoice = (menuChoice + MENU_ITEMS - 1) % MENU_ITEMS;
                 if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S))
                     menuChoice = (menuChoice + 1) % MENU_ITEMS;
 
-                /* Mouse: passar por cima destaca, clicar confirma. */
+                // Mouse: passar por cima destaca, clicar confirma.
                 Vector2 mouse = GetMousePosition();
                 for (int i = 0; i < MENU_ITEMS; i++) {
                     if (CheckCollisionPointRec(mouse, MenuButtonBox(i))) {
@@ -98,9 +98,9 @@ void GameRun(void) {
                     }
                 }
 
-                /* Teclado: ENTER confirma a opcao destacada. */
+                // Teclado: ENTER confirma a opcao destacada.
                 if (IsKeyPressed(KEY_ENTER)) ActivateMenuItem(menuChoice);
-                if (IsKeyPressed(KEY_R))      state = GAME_STATE_RANKING;   /* atalho */
+                if (IsKeyPressed(KEY_R))      state = GAME_STATE_RANKING;   // atalho
                 break;
             }
 
@@ -108,7 +108,7 @@ void GameRun(void) {
                 PlayerUpdate();
                 WorldUpdate();
                 if (WorldIsFinished()) {
-                    /* Ao terminar, registra a pontuacao no ranking. */
+                    // Ao terminar, registra a pontuacao no ranking.
                     RankingAdd(WorldGetScore(), WorldGetBagsCollected());
                     state = WorldDidWin() ? GAME_STATE_PHASE_COMPLETE
                                           : GAME_STATE_GAMEOVER;
@@ -134,7 +134,7 @@ void GameRun(void) {
                 break;
         }
 
-        /* ---------------- DRAW (desenho) ---------------- */
+        // ---------------- DRAW (desenho) ----------------
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
@@ -177,7 +177,7 @@ void GameRun(void) {
                 if (RankingCount() == 0) {
                     DrawTextCentered("Nenhuma pontuacao registrada ainda.", 300, 22, GRAY);
                 } else {
-                    /* Percorre as LINHAS da matriz e mostra cada posicao. */
+                    // Percorre as LINHAS da matriz e mostra cada posicao.
                     for (int i = 0; i < RankingCount(); i++) {
                         int pontos  = RankingGet(i, RANKING_POINTS);
                         int sacolas = RankingGet(i, RANKING_BAGS);

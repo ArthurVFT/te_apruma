@@ -1,45 +1,45 @@
-/*
- * world.c - Fase 1 - Rua Limpa.
- *
- * Regras:
- *   - Sacolas aparecem em posicoes aleatorias e ficam paradas.
- *   - Jogador encosta na sacola -> +1 ponto.
- *   - O cachorro persegue a sacola mais proxima; se pegar antes, ela vale -1.
- *   - Ha um tempo limite; ao fim, vence quem terminar com score > 0.
- */
+//
+// world.c - Fase 1 - Rua Limpa.
+//
+// Regras:
+// - Sacolas aparecem em posicoes aleatorias e ficam paradas.
+// - Jogador encosta na sacola -> +1 ponto.
+// - O cachorro persegue a sacola mais proxima; se pegar antes, ela vale -1.
+// - Ha um tempo limite; ao fim, vence quem terminar com score > 0.
+//
 
 #include "world.h"
 #include "config.h"
 #include "entity.h"
 #include "player.h"
-#include <math.h>   /* sqrtf */
+#include <math.h>   // sqrtf
 
-/* Ajustes de dificuldade. */
+// Ajustes de dificuldade.
 #define PHASE_DURATION   30.0f
 #define BAG_INTERVAL      1.0f
 #define DOG_INTERVAL      6.0f
 
-/* Margens para as sacolas nao nascerem nas bordas nem sob o HUD. */
+// Margens para as sacolas nao nascerem nas bordas nem sob o HUD.
 #define BAG_MARGIN_X       30.0f
 #define BAG_MARGIN_TOP     70.0f
 #define BAG_MARGIN_BOTTOM  30.0f
 
 static World world = {0};
 
-/* Sorteia um float entre min e max. */
+// Sorteia um float entre min e max.
 static float RandomFloat(float min, float max) {
     float t = (float)GetRandomValue(0, 1000) / 1000.0f;
     return min + (max - min) * t;
 }
 
-/* --- callbacks genericos --- */
+// --- callbacks genericos ---
 
-/* ListRemoveIf: destroi o dado removido (1 argumento). */
+// ListRemoveIf: destroi o dado removido (1 argumento).
 static void DestroyEntity(void* data) {
     EntityDestroy((Entity*)data);
 }
 
-/* ListForEach: destroi todos os dados de uma vez (2 argumentos). */
+// ListForEach: destroi todos os dados de uma vez (2 argumentos).
 static void DestroyEntityCallback(void* data, void* context) {
     (void)context;
     EntityDestroy((Entity*)data);
@@ -50,13 +50,13 @@ static void DrawEntityCallback(void* data, void* context) {
     EntityDraw((Entity*)data);
 }
 
-/* Predicado: "essa entidade deve sair da lista?" */
+// Predicado: "essa entidade deve sair da lista?"
 static bool IsEntityInactive(void* data, void* context) {
     (void)context;
     return !((Entity*)data)->active;
 }
 
-/* --- IA do cachorro: achar a sacola mais proxima --- */
+// --- IA do cachorro: achar a sacola mais proxima ---
 
 typedef struct {
     Vector2 origin;
@@ -64,7 +64,7 @@ typedef struct {
     float   bestDistSq;
 } NearestBagContext;
 
-/* Comparamos distancia AO QUADRADO para evitar a raiz quadrada. */
+// Comparamos distancia AO QUADRADO para evitar a raiz quadrada.
 static void FindNearestBagCallback(void* data, void* context) {
     Entity* e = (Entity*)data;
     NearestBagContext* ctx = (NearestBagContext*)context;
@@ -87,7 +87,7 @@ static Entity* FindNearestBag(List* entities, Vector2 origin) {
     return ctx.best;
 }
 
-/* --- atualizacao das entidades --- */
+// --- atualizacao das entidades ---
 
 typedef struct {
     float deltaTime;
@@ -95,7 +95,7 @@ typedef struct {
     int*  score;
 } UpdateContext;
 
-/* O cachorro persegue a sacola mais proxima e a "come" se encostar (-1 ponto). */
+// O cachorro persegue a sacola mais proxima e a "come" se encostar (-1 ponto).
 static void UpdateDog(Entity* dog, float delta, List* entities, int* score) {
     Entity* target = FindNearestBag(entities, dog->position);
     if (target == NULL) {
@@ -103,7 +103,7 @@ static void UpdateDog(Entity* dog, float delta, List* entities, int* score) {
         return;
     }
 
-    /* Direcao do centro do cachorro ate o centro da sacola. */
+    // Direcao do centro do cachorro ate o centro da sacola.
     Vector2 dogCenter = { dog->position.x + dog->size.x * 0.5f,
                           dog->position.y + dog->size.y * 0.5f };
     Vector2 bagCenter = { target->position.x + target->size.x * 0.5f,
@@ -120,7 +120,7 @@ static void UpdateDog(Entity* dog, float delta, List* entities, int* score) {
 
     EntityUpdate(dog, delta);
 
-    /* Colisao cachorro x sacola (AABB). Marca inativa; a faxina remove. */
+    // Colisao cachorro x sacola (AABB). Marca inativa; a faxina remove.
     Rectangle dogBox = { dog->position.x, dog->position.y, dog->size.x, dog->size.y };
     Rectangle bagBox = { target->position.x, target->position.y,
                          target->size.x, target->size.y };
@@ -144,7 +144,7 @@ static void UpdateEntityCallback(void* data, void* context) {
     }
 }
 
-/* --- colisao jogador x sacola --- */
+// --- colisao jogador x sacola ---
 
 typedef struct {
     Rectangle playerBox;
@@ -163,12 +163,12 @@ static void PlayerBagCollideCallback(void* data, void* context) {
 
     if (!CheckCollisionRecs(ctx->playerBox, bagBox)) return;
 
-    (*ctx->score)++;    /* +1 ponto            */
-    (*ctx->bags)++;     /* +1 sacola coletada  */
+    (*ctx->score)++;    // +1 ponto
+    (*ctx->bags)++;     // +1 sacola coletada
     entity->active = false;
 }
 
-/* --- spawn --- */
+// --- spawn ---
 
 static void SpawnBag(void) {
     float x = RandomFloat(BAG_MARGIN_X, SCREEN_W - BAG_MARGIN_X);
@@ -177,7 +177,7 @@ static void SpawnBag(void) {
     Entity* entity = EntityCreate(ENTITY_BAG, (Vector2){x, y});
     if (entity == NULL) return;
 
-    entity->velocity = (Vector2){0, 0};   /* sacola parada */
+    entity->velocity = (Vector2){0, 0};   // sacola parada
     ListPushBack(world.entities, entity);
 }
 
@@ -199,14 +199,14 @@ static void CountActiveDogsCallback(void* data, void* context) {
     }
 }
 
-/* Ha algum cachorro em cena? (limite de 1 por vez) */
+// Ha algum cachorro em cena? (limite de 1 por vez)
 static bool HasActiveDog(List* entities) {
     int count = 0;
     ListForEach(entities, CountActiveDogsCallback, &count);
     return count > 0;
 }
 
-/* --- funcoes publicas --- */
+// --- funcoes publicas ---
 
 void WorldInit(void) {
     world.entities = ListCreate();
@@ -216,15 +216,15 @@ void WorldInit(void) {
 void WorldReset(void) {
     if (world.entities == NULL) return;
 
-    /* ListClear libera os NOS, entao destruimos os dados (Entity) antes. */
+    // ListClear libera os NOS, entao destruimos os dados (Entity) antes.
     ListForEach(world.entities, DestroyEntityCallback, NULL);
     ListClear(world.entities);
 
     world.score = 0;
     world.bagsCollected = 0;
     world.timeLeft = PHASE_DURATION;
-    world.bagTimer = 0.3f;   /* primeira sacola no comeco */
-    world.dogTimer = 2.0f;   /* primeiro cachorro apos 2s */
+    world.bagTimer = 0.3f;   // primeira sacola no comeco
+    world.dogTimer = 2.0f;   // primeiro cachorro apos 2s
     world.finished = false;
     world.won = false;
 }
@@ -234,7 +234,7 @@ void WorldUpdate(void) {
 
     float delta = GetFrameTime();
 
-    /* 1) tempo */
+    // 1) tempo
     world.timeLeft -= delta;
     if (world.timeLeft <= 0.0f) {
         world.timeLeft = 0.0f;
@@ -243,7 +243,7 @@ void WorldUpdate(void) {
         return;
     }
 
-    /* 2) spawns */
+    // 2) spawns
     world.bagTimer -= delta;
     if (world.bagTimer <= 0.0f) {
         SpawnBag();
@@ -258,11 +258,11 @@ void WorldUpdate(void) {
         world.dogTimer = DOG_INTERVAL;
     }
 
-    /* 3) move/IA */
+    // 3) move/IA
     UpdateContext uctx = { delta, world.entities, &world.score };
     ListForEach(world.entities, UpdateEntityCallback, &uctx);
 
-    /* 4) colisao jogador x sacola */
+    // 4) colisao jogador x sacola
     Player* p = PlayerGet();
     PlayerCollideContext pctx = {
         { p->position.x, p->position.y, p->size.x, p->size.y },
@@ -271,7 +271,7 @@ void WorldUpdate(void) {
     };
     ListForEach(world.entities, PlayerBagCollideCallback, &pctx);
 
-    /* 5) faxina: remove inativas (coletadas ou comidas) */
+    // 5) faxina: remove inativas (coletadas ou comidas)
     ListRemoveIf(world.entities, IsEntityInactive, NULL, DestroyEntity);
 }
 
