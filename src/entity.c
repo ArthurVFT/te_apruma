@@ -1,7 +1,7 @@
-/* entity.c - criacao, atualizacao e desenho das entidades. */
+// entity.c - criacao, atualizacao e desenho das entidades.
 
 #include "entity.h"
-#include <stdlib.h>   /* malloc / free */
+#include <stdlib.h>   // malloc / free
 
 Entity* EntityCreate(EntityType type, Vector2 position) {
     Entity* entity = (Entity*)malloc(sizeof(Entity));
@@ -39,7 +39,7 @@ Entity* EntityCreate(EntityType type, Vector2 position) {
 void EntityUpdate(Entity* entity, float deltaTime) {
     if (entity == NULL || !entity->active) return;
 
-    /* Multiplicar por deltaTime mantem o movimento igual em qualquer FPS. */
+    // Multiplicar por deltaTime mantem o movimento igual em qualquer FPS.
     entity->position.x += entity->velocity.x * deltaTime;
     entity->position.y += entity->velocity.y * deltaTime;
 }
@@ -48,7 +48,7 @@ void EntityDraw(Entity* entity) {
     if (entity == NULL || !entity->active) return;
 
     if (entity->type == ENTITY_DOG) {
-        /* Corpo + cabeca + olho + focinho, para o cachorro se destacar. */
+        // Corpo + cabeca + olho + focinho, para o cachorro se destacar.
         DrawRectangleV(entity->position, entity->size, entity->color);
         DrawRectangle((int)entity->position.x, (int)(entity->position.y - 9), 16, 12, entity->color);
         DrawRectangle((int)entity->position.x + 10, (int)(entity->position.y - 6), 3, 3, BLACK);
@@ -58,7 +58,7 @@ void EntityDraw(Entity* entity) {
     }
 }
 
-/* Toda entidade criada com EntityCreate precisa ser liberada aqui. */
+// Toda entidade criada com EntityCreate precisa ser liberada aqui.
 void EntityDestroy(Entity* entity) {
     if (entity == NULL) return;
     free(entity);

@@ -3,13 +3,13 @@
 
 #include "raylib.h"
 
-/* Dados do jogador (o agente comunitario). */
+// Dados do jogador (o agente comunitario).
 typedef struct {
-    Vector2 position;   /* canto superior esquerdo, em pixels */
-    Vector2 size;       /* largura e altura do retangulo      */
-    Vector2 velocity;   /* reservado para uso futuro          */
+    Vector2 position;   // canto superior esquerdo, em pixels
+    Vector2 size;       // largura e altura do retangulo
+    Vector2 velocity;   // reservado para uso futuro
     Color color;
-    float speed;        /* pixels por segundo                 */
+    float speed;        // pixels por segundo
 } Player;
 
 void PlayerInit(void);

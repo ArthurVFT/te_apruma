@@ -1,11 +1,11 @@
-/* game.h - modulo principal: telas e loop do jogo. */
+// game.h - modulo principal: telas e loop do jogo.
 
 #ifndef GAME_H
 #define GAME_H
 
 #include "raylib.h"
 
-/* Cada valor representa uma tela do jogo. */
+// Cada valor representa uma tela do jogo.
 typedef enum {
     GAME_STATE_MENU,
     GAME_STATE_PLAYING,

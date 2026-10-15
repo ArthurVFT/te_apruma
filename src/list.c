@@ -1,4 +1,4 @@
-/* list.c - lista encadeada generica (guarda void*). */
+// list.c - lista encadeada generica (guarda void*).
 
 #include "list.h"
 
@@ -26,7 +26,7 @@ void ListPushBack(List* list, void* data) {
     newNode->next = NULL;
 
     if (list->head == NULL) {
-        list->head = newNode;   /* lista estava vazia */
+        list->head = newNode;   // lista estava vazia
         list->tail = newNode;
     } else {
         list->tail->next = newNode;
@@ -45,7 +45,7 @@ void ListPushFront(List* list, void* data) {
 
     list->head = newNode;
     if (list->tail == NULL) {
-        list->tail = newNode;   /* lista estava vazia */
+        list->tail = newNode;   // lista estava vazia
     }
     list->count++;
 }
@@ -65,7 +65,7 @@ bool ListPopFront(List* list, void** data) {
 bool ListRemove(List* list, void* data) {
     if (list == NULL || list->head == NULL) return false;
 
-    /* Caso 1: o dado esta no primeiro no. */
+    // Caso 1: o dado esta no primeiro no.
     if (list->head->data == data) {
         Node* temp = list->head;
         list->head = temp->next;
@@ -75,7 +75,7 @@ bool ListRemove(List* list, void* data) {
         return true;
     }
 
-    /* Caso 2: esta no meio/fim. Guardamos o ANTERIOR para "pular" o removido. */
+    // Caso 2: esta no meio/fim. Guardamos o ANTERIOR para "pular" o removido.
     Node* current = list->head;
     while (current->next != NULL) {
         if (current->next->data == data) {
@@ -97,7 +97,7 @@ void ListClear(List* list) {
     Node* current = list->head;
     while (current != NULL) {
         Node* temp = current;
-        current = current->next;   /* avanca ANTES de liberar o no atual */
+        current = current->next;   // avanca ANTES de liberar o no atual
         free(temp);
     }
     list->head = NULL;
@@ -124,21 +124,21 @@ int ListRemoveIf(List* list, bool (*predicate)(void* data, void* context),
     Node* current = list->head;
 
     while (current != NULL) {
-        Node* next = current->next;   /* guarda o proximo antes de mexer */
+        Node* next = current->next;   // guarda o proximo antes de mexer
 
         if (predicate(current->data, context)) {
             if (prev == NULL) {
-                list->head = next;        /* removeu o primeiro */
+                list->head = next;        // removeu o primeiro
             } else {
-                prev->next = next;        /* pula o no removido */
+                prev->next = next;        // pula o no removido
             }
             if (list->tail == current) {
                 list->tail = prev;
             }
             if (destructor != NULL) {
-                destructor(current->data);   /* libera o DADO */
+                destructor(current->data);   // libera o DADO
             }
-            free(current);                   /* libera o NO   */
+            free(current);                   // libera o NO
             list->count--;
             removed++;
         } else {

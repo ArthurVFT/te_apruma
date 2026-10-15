@@ -1,13 +1,13 @@
 #ifndef LIST_H
 #define LIST_H
 
-#include <stdlib.h>   /* malloc, free, NULL */
+#include <stdlib.h>   // malloc, free, NULL
 #include <stdbool.h>
 
-/*
- * Lista encadeada generica: guarda void* (nao sabe o que esta guardando).
- * Quem usa a lista e responsavel por criar e destruir os dados.
- */
+//
+// Lista encadeada generica: guarda void* (nao sabe o que esta guardando).
+// Quem usa a lista e responsavel por criar e destruir os dados.
+//
 
 typedef struct Node {
     void* data;
@@ -15,9 +15,9 @@ typedef struct Node {
 } Node;
 
 typedef struct {
-    Node* head;   /* primeiro node                        */
-    Node* tail;   /* ultimo no (insercao rapida no fim) */
-    int   count;  /* quantidade de itens                */
+    Node* head;   // primeiro node
+    Node* tail;   // ultimo no (insercao rapida no fim)
+    int   count;  // quantidade de itens
 } List;
 
 List* ListCreate(void);
