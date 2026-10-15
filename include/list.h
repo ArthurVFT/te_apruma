@@ -15,7 +15,7 @@ typedef struct Node {
 } Node;
 
 typedef struct {
-    Node* head;   /* primeiro no                        */
+    Node* head;   /* primeiro node                        */
     Node* tail;   /* ultimo no (insercao rapida no fim) */
     int   count;  /* quantidade de itens                */
 } List;
