@@ -7,6 +7,7 @@ Entity* EntityCreate(EntityType type, Vector2 position) {
     Entity* entity = (Entity*)malloc(sizeof(Entity));
     if (entity == NULL) return NULL;
 
+    entity->type = type;
     entity->position = position;
     entity->velocity = (Vector2){0, 0};
     entity->active = true;
