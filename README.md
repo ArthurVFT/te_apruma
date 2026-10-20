@@ -31,16 +31,6 @@ make
 make run
 ```
 
-### Opção 2: Compilação manual
-
-Substitua `<caminho-para-raylib-include>` e `<caminho-para-raylib-lib>` pelos caminhos corretos na sua máquina.
-
-```powershell
-gcc src/*.c -o build/teapruma.exe -Iinclude -I"<caminho-para-raylib-include>" -L"<caminho-para-raylib-lib>" -lraylib -lopengl32 -lgdi32 -lwinmm
-.\build\teapruma.exe
-```
-
-> Dica: Se você já tem o Makefile ajustado com os caminhos certos, a opção 1 é a mais prática.
 
 ## Estrutura do Projeto
 
