@@ -5,6 +5,7 @@
 #include "player.h"
 #include "world.h"
 #include "ranking.h"
+#include "textures.h"   
 
 // Em qual tela o jogo esta. Comeca no menu.
 static GameState state = GAME_STATE_MENU;
@@ -71,6 +72,7 @@ static void DrawMenu(void) {
 void GameInit(void) {
     InitWindow(SCREEN_W, SCREEN_H, "Te Apruma!");
     SetTargetFPS(60);
+    TexturesLoad();
     PlayerInit();
     WorldInit();
     RankingInit();
@@ -205,6 +207,7 @@ void GameRun(void) {
 void GameClose(void) {
     PlayerClose();
     WorldClose();
+    TexturesUnload();
     CloseWindow();
 }
 
