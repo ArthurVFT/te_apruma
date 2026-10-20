@@ -68,7 +68,7 @@ void EntityDraw(Entity* entity) {
         Rectangle source = {
             0.0f,
             (float)(entity->frame * DOG_FRAME_H),
-            entity->facingLeft ? -(float)DOG_FRAME_W : (float)DOG_FRAME_W,
+            entity->facingLeft ? (float)DOG_FRAME_W : -(float)DOG_FRAME_W,
             (float)DOG_FRAME_H
         };
 
