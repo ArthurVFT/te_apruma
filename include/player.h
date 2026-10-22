@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include "raylib.h"
+#include <stdbool.h>
 
 // Dados do jogador (o agente comunitario).
 typedef struct {
@@ -10,6 +11,9 @@ typedef struct {
     Vector2 velocity;   // reservado para uso futuro
     Color color;
     float speed;        // pixels por segundo
+    int   frame;        // quadro atual da animacao
+    float frameTimer;   // tempo acumulado no quadro
+    bool  facingLeft;   // true = desenha espelhado
 } Player;
 
 void PlayerInit(void);
