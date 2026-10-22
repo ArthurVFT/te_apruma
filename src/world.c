@@ -14,10 +14,17 @@
 #include "player.h"
 #include <math.h>   // sqrtf
 
-// Ajustes de dificuldade.
+// Ajustes de dificuldade. A dificuldade cresce com o tempo da fase:
+// a velocidade do cachorro sobe e o limite de cachorros em cena aumenta.
 #define PHASE_DURATION   30.0f
 #define BAG_INTERVAL      1.0f
-#define DOG_INTERVAL      6.0f
+
+#define DOG_BASE_SPEED    90.0f    // velocidade no comeco da fase
+#define DOG_SPEED_GAIN   90.0f     // quanto ganha ate o fim (90 + 90 = 180 no fim)
+#define DOG_BASE_LIMIT       1     // cachorros em cena no comeco
+#define DOG_MAX_LIMIT        3     // cachorros em cena no fim
+#define DOG_SPAWN_BASE    6.0f     // intervalo entre tentativas de spawn no comeco
+#define DOG_SPAWN_FAST    2.5f     // intervalo entre tentativas de spawn no fim
 
 // Margens para as sacolas nao nascerem nas bordas nem sob o HUD.
 #define BAG_MARGIN_X       30.0f
@@ -30,6 +37,15 @@ static World world = {0};
 static float RandomFloat(float min, float max) {
     float t = (float)GetRandomValue(0, 1000) / 1000.0f;
     return min + (max - min) * t;
+}
+
+// Quanto da fase ja passou, de 0.0 (comeco) a 1.0 (fim).
+// E o "motor" da dificuldade: tudo escala com esse valor.
+static float PhaseProgress(void) {
+    float p = 1.0f - (world.timeLeft / PHASE_DURATION);
+    if (p < 0.0f) p = 0.0f;
+    if (p > 1.0f) p = 1.0f;
+    return p;
 }
 
 // --- callbacks genericos ---
@@ -93,15 +109,19 @@ typedef struct {
     float deltaTime;
     List* entities;
     int*  score;
+    float progress;   // 0..1: usado para acelerar os cachorros ja em cena
 } UpdateContext;
 
 // O cachorro persegue a sacola mais proxima e a "come" se encostar (-1 ponto).
-static void UpdateDog(Entity* dog, float delta, List* entities, int* score) {
+// A velocidade efetiva cresce com o progresso da fase, mesmo para quem ja nasceu.
+static void UpdateDog(Entity* dog, float delta, List* entities, int* score, float progress) {
     Entity* target = FindNearestBag(entities, dog->position);
     if (target == NULL) {
         dog->velocity = (Vector2){0, 0};
         return;
     }
+
+    float speed = DOG_BASE_SPEED + DOG_SPEED_GAIN * progress;
 
     // Direcao do centro do cachorro ate o centro da sacola.
     Vector2 dogCenter = { dog->position.x + dog->size.x * 0.5f,
@@ -114,8 +134,8 @@ static void UpdateDog(Entity* dog, float delta, List* entities, int* score) {
     float len = sqrtf(dx * dx + dy * dy);
 
     if (len > 0.0f) {
-        dog->velocity.x = dx / len * dog->speed;
-        dog->velocity.y = dy / len * dog->speed;
+        dog->velocity.x = dx / len * speed;
+        dog->velocity.y = dy / len * speed;
     }
 
     EntityUpdate(dog, delta);
@@ -138,7 +158,7 @@ static void UpdateEntityCallback(void* data, void* context) {
     if (!entity->active) return;
 
     if (entity->type == ENTITY_DOG) {
-        UpdateDog(entity, ctx->deltaTime, ctx->entities, ctx->score);
+        UpdateDog(entity, ctx->deltaTime, ctx->entities, ctx->score, ctx->progress);
     } else {
         EntityUpdate(entity, ctx->deltaTime);
     }
@@ -181,7 +201,9 @@ static void SpawnBag(void) {
     ListPushBack(world.entities, entity);
 }
 
-static void SpawnDog(void) {
+// Nasce na lateral e ja entra com a velocidade do momento (cachorros
+// que aparecem mais tarde na fase nascem mais rapidos).
+static void SpawnDog(float speed) {
     bool fromRight = (GetRandomValue(0, 1) == 0);
     float x = fromRight ? (float)(SCREEN_W + 40) : -40.0f;
     float y = RandomFloat(80.0f, SCREEN_H - 40.0f);
@@ -189,9 +211,11 @@ static void SpawnDog(void) {
     Entity* entity = EntityCreate(ENTITY_DOG, (Vector2){x, y});
     if (entity == NULL) return;
 
+    entity->speed = speed;
     ListPushBack(world.entities, entity);
 }
 
+// Conta quantos cachorros ativos existem em cena.
 static void CountActiveDogsCallback(void* data, void* context) {
     Entity* e = (Entity*)data;
     if (e->active && e->type == ENTITY_DOG) {
@@ -199,11 +223,10 @@ static void CountActiveDogsCallback(void* data, void* context) {
     }
 }
 
-// Ha algum cachorro em cena? (limite de 1 por vez)
-static bool HasActiveDog(List* entities) {
+static int CountActiveDogs(List* entities) {
     int count = 0;
     ListForEach(entities, CountActiveDogsCallback, &count);
-    return count > 0;
+    return count;
 }
 
 // --- funcoes publicas ---
@@ -243,23 +266,29 @@ void WorldUpdate(void) {
         return;
     }
 
-    // 2) spawns
+    // 2) spawns. A dificuldade cresce com o progresso da fase.
+    float progress = PhaseProgress();
+
     world.bagTimer -= delta;
     if (world.bagTimer <= 0.0f) {
         SpawnBag();
         world.bagTimer = BAG_INTERVAL;
     }
 
+    // A cada tentativa, o intervalo diminui e o limite de cachorros aumenta.
     world.dogTimer -= delta;
     if (world.dogTimer <= 0.0f) {
-        if (!HasActiveDog(world.entities)) {
-            SpawnDog();
+        int limit = DOG_BASE_LIMIT + (int)((DOG_MAX_LIMIT - DOG_BASE_LIMIT) * progress);
+
+        if (CountActiveDogs(world.entities) < limit) {
+            float speed = DOG_BASE_SPEED + DOG_SPEED_GAIN * progress;
+            SpawnDog(speed);
         }
-        world.dogTimer = DOG_INTERVAL;
+        world.dogTimer = DOG_SPAWN_BASE + (DOG_SPAWN_FAST - DOG_SPAWN_BASE) * progress;
     }
 
     // 3) move/IA
-    UpdateContext uctx = { delta, world.entities, &world.score };
+    UpdateContext uctx = { delta, world.entities, &world.score, progress };
     ListForEach(world.entities, UpdateEntityCallback, &uctx);
 
     // 4) colisao jogador x sacola

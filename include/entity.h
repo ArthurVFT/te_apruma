@@ -20,7 +20,7 @@ typedef struct {
     Color color;
     bool active;      // false = deve sair da lista na faxina
     float speed;      // magnitude da velocidade (pixels/s)
-    int   frame;        // quadro atual (0 .. 6)
+    int   frame;        // quadro atual da animacao
     float frameTimer;   // tempo acumulado no quadro
     bool  facingLeft;   // true = desenha espelhado
 } Entity;
