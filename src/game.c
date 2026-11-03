@@ -5,10 +5,14 @@
 #include "player.h"
 #include "world.h"
 #include "ranking.h"
-#include "textures.h"   
+#include "textures.h"  
+#include "canal.h" 
 
 // Em qual tela o jogo esta. Comeca no menu.
 static GameState state = GAME_STATE_MENU;
+
+static int currentPhase = 1;   // fase inicial
+
 
 // --- Menu principal ---
 
@@ -30,6 +34,7 @@ static Rectangle MenuButtonBox(int index) {
 // Executa a acao da opcao escolhida.
 static void ActivateMenuItem(int index) {
     if (index == 0) {
+        currentPhase = 1;
         WorldReset();
         state = GAME_STATE_PLAYING;
     } else {
@@ -75,6 +80,7 @@ void GameInit(void) {
     TexturesLoad();
     PlayerInit();
     WorldInit();
+    CanalInit();
     RankingInit();
 }
 
@@ -207,6 +213,7 @@ void GameRun(void) {
 void GameClose(void) {
     PlayerClose();
     WorldClose();
+    CanalClose();
     TexturesUnload();
     CloseWindow();
 }
