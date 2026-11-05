@@ -5,10 +5,14 @@
 #include "player.h"
 #include "world.h"
 #include "ranking.h"
-#include "textures.h"   
+#include "textures.h"  
+#include "canal.h" 
 
 // Em qual tela o jogo esta. Comeca no menu.
 static GameState state = GAME_STATE_MENU;
+
+static int currentPhase = 1;   // fase inicial
+
 
 // --- Menu principal ---
 
@@ -30,6 +34,7 @@ static Rectangle MenuButtonBox(int index) {
 // Executa a acao da opcao escolhida.
 static void ActivateMenuItem(int index) {
     if (index == 0) {
+        currentPhase = 1;
         WorldReset();
         state = GAME_STATE_PLAYING;
     } else {
@@ -75,6 +80,7 @@ void GameInit(void) {
     TexturesLoad();
     PlayerInit();
     WorldInit();
+    CanalInit();
     RankingInit();
 }
 
@@ -106,27 +112,46 @@ void GameRun(void) {
                 break;
             }
 
-            case GAME_STATE_PLAYING:
+           case GAME_STATE_PLAYING:
                 PlayerUpdate();
-                WorldUpdate();
-                if (WorldIsFinished()) {
-                    // Ao terminar, registra a pontuacao no ranking.
-                    RankingAdd(WorldGetScore(), WorldGetBagsCollected());
-                    state = WorldDidWin() ? GAME_STATE_PHASE_COMPLETE
-                                          : GAME_STATE_GAMEOVER;
+                if (currentPhase == 1) {
+                    WorldUpdate();
+                    if (WorldIsFinished()) {
+                        // Ao terminar, registra a pontuacao no ranking.
+                        RankingAdd(WorldGetScore(), WorldGetBagsCollected());
+                        state = WorldDidWin() ? GAME_STATE_PHASE_COMPLETE
+                                              : GAME_STATE_GAMEOVER;
+                    }
+                } else if (currentPhase == 2) {
+                    CanalUpdate();
+                    if (CanalIsFinished()) {
+                        state = CanalDidWin() ? GAME_STATE_PHASE_COMPLETE
+                                              : GAME_STATE_GAMEOVER;
+                    }
                 }
                 if (IsKeyPressed(KEY_P)) {
                     state = GAME_STATE_PAUSED;
                 }
                 break;
-
+                
             case GAME_STATE_PAUSED:
                 if (IsKeyPressed(KEY_P) || IsKeyPressed(KEY_ENTER)) {
                     state = GAME_STATE_PLAYING;
                 }
                 break;
 
-            case GAME_STATE_PHASE_COMPLETE:
+                case GAME_STATE_PHASE_COMPLETE:
+                if (IsKeyPressed(KEY_ENTER)) {
+                    if (currentPhase == 1) {
+                        currentPhase = 2;
+                        CanalReset();
+                        state = GAME_STATE_PLAYING;
+                    } else {
+                        state = GAME_STATE_MENU;
+                    }
+                }
+                break;
+
             case GAME_STATE_GAMEOVER:
             case GAME_STATE_RANKING:
             case GAME_STATE_CREDITS:
@@ -145,14 +170,25 @@ void GameRun(void) {
                 DrawMenu();
                 break;
 
-            case GAME_STATE_PLAYING:
-                DrawRectangle(0, GROUND_Y, SCREEN_W, GROUND_HEIGHT, LIGHTGRAY);
-                WorldDraw();
+                case GAME_STATE_PLAYING:
+                if (currentPhase == 1) {
+                    DrawRectangle(0, GROUND_Y, SCREEN_W, GROUND_HEIGHT, LIGHTGRAY);
+                    WorldDraw();
+                } else {
+                    CanalDraw();
+                }
                 PlayerDraw();
 
-                DrawText("Fase 1 - Rua Limpa", 20, 20, 30, DARKBLUE);
-                DrawText(TextFormat("Pontos: %d", WorldGetScore()), 20, 60, 20, DARKGRAY);
-                DrawText(TextFormat("Tempo: %.0f s", WorldGetTimeLeft()), 20, 85, 20, RED);
+                if (currentPhase == 1) {
+                    DrawText("Fase 1 - Rua Limpa", 20, 20, 30, DARKBLUE);
+                    DrawText(TextFormat("Pontos: %d", WorldGetScore()), 20, 60, 20, DARKGRAY);
+                    DrawText(TextFormat("Tempo: %.0f s", WorldGetTimeLeft()), 20, 85, 20, RED);
+                } else {
+                    DrawText("Fase 2 - Canal", 20, 20, 30, DARKBLUE);
+                    DrawText(TextFormat("Pontos: %d", CanalGetScore()), 20, 60, 20, DARKGRAY);
+                    DrawText(TextFormat("Tempo: %.0f s", CanalGetTimeLeft()), 20, 85, 20, RED);
+                    DrawText(TextFormat("Na agua: %d/6", CanalGetPeopleInWater()), 20, 110, 20, BLUE);
+                }
                 DrawText("P - Pausar", SCREEN_W - 120, 20, 16, GRAY);
                 break;
 
@@ -162,14 +198,17 @@ void GameRun(void) {
                 break;
 
             case GAME_STATE_PHASE_COMPLETE:
-                DrawTextCentered("FASE 1 CONCLUIDA!", 250, 40, DARKGREEN);
-                DrawTextCentered(TextFormat("Pontuacao: %d", WorldGetScore()), 310, 26, DARKGRAY);
-                DrawTextCentered("ENTER para voltar ao menu", 370, 20, DARKGRAY);
+                DrawTextCentered(TextFormat("FASE %d CONCLUIDA!", currentPhase), 250, 40, DARKGREEN);
+                DrawTextCentered(TextFormat("Pontuacao: %d",currentPhase == 1 ? WorldGetScore() : CanalGetScore()),310, 26, DARKGRAY);
+                DrawTextCentered(currentPhase == 1 ? "ENTER para ir a fase 2"
+                                                   : "ENTER para voltar ao menu",370, 20, DARKGRAY);
                 break;
 
             case GAME_STATE_GAMEOVER:
-                DrawTextCentered("FASE FALHOU", 250, 40, RED);
-                DrawTextCentered(TextFormat("Pontuacao final: %d", WorldGetScore()), 310, 24, DARKGRAY);
+                DrawTextCentered(TextFormat("FASE %d FALHOU", currentPhase), 250, 40, RED);
+                DrawTextCentered(TextFormat("Pontuacao final: %d",
+                                 currentPhase == 1 ? WorldGetScore() : CanalGetScore()),
+                                 310, 24, DARKGRAY);
                 DrawTextCentered("ENTER para voltar ao menu", 370, 20, DARKGRAY);
                 break;
 
@@ -207,6 +246,7 @@ void GameRun(void) {
 void GameClose(void) {
     PlayerClose();
     WorldClose();
+    CanalClose();
     TexturesUnload();
     CloseWindow();
 }
