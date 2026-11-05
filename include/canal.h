@@ -28,5 +28,6 @@ int   CanalGetPeopleRescued(void);
 float CanalGetTimeLeft(void);
 bool  CanalIsFinished(void);
 bool  CanalDidWin(void);
+int  CanalGetPeopleInWater(void);
 
 #endif
