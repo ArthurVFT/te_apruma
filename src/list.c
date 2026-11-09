@@ -17,11 +17,11 @@ void ListDestroy(List* list) {
     free(list);
 }
 
-void ListPushBack(List* list, void* data) {
-    if (list == NULL) return;
+bool ListPushBack(List* list, void* data) {
+    if (list == NULL) return false;
 
     Node* newNode = (Node*)malloc(sizeof(Node));
-    if (newNode == NULL) return;
+    if (newNode == NULL) return false;
     newNode->data = data;
     newNode->next = NULL;
 
@@ -33,13 +33,14 @@ void ListPushBack(List* list, void* data) {
         list->tail = newNode;
     }
     list->count++;
+    return true;
 }
 
-void ListPushFront(List* list, void* data) {
-    if (list == NULL) return;
+bool ListPushFront(List* list, void* data) {
+    if (list == NULL) return false;
 
     Node* newNode = (Node*)malloc(sizeof(Node));
-    if (newNode == NULL) return;
+    if (newNode == NULL) return false;
     newNode->data = data;
     newNode->next = list->head;
 
@@ -48,6 +49,7 @@ void ListPushFront(List* list, void* data) {
         list->tail = newNode;   // lista estava vazia
     }
     list->count++;
+    return true;
 }
 
 bool ListPopFront(List* list, void** data) {
