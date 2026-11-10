@@ -13,4 +13,7 @@
 #define GROUND_HEIGHT 40
 #define GROUND_Y      (SCREEN_H - GROUND_HEIGHT)
 
+// Arquivo onde o ranking e salvo (relativo a pasta de execucao).
+#define RANKING_FILE  "ranking.txt"
+
 #endif
