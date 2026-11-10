@@ -125,6 +125,8 @@ void GameRun(void) {
                 } else if (currentPhase == 2) {
                     CanalUpdate();
                     if (CanalIsFinished()) {
+                        // Mesmo registro da fase 1. Na fase 2 a segunda coluna guarda as pessoas resgatadas.
+                        RankingAdd(CanalGetScore(), CanalGetPeopleRescued());
                         state = CanalDidWin() ? GAME_STATE_PHASE_COMPLETE
                                               : GAME_STATE_GAMEOVER;
                     }
