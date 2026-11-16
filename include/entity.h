@@ -25,7 +25,7 @@ typedef struct {
     bool  facingLeft;   // true = desenha espelhado
 } Entity;
 
-// EntityCreate aloca na memoria dinamica; EntityDestroy libera.
+// EntityCreate aloca na memoria dinamica; EntityDestroy libera, ou seja um free.
 Entity* EntityCreate(EntityType type, Vector2 position);
 void EntityUpdate(Entity* entity, float deltaTime);
 void EntityDraw(Entity* entity);
