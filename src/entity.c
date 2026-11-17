@@ -8,8 +8,11 @@
 #define DOG_DRAW_SCALE     2.5f    // 80x80
 #define BAG_DRAW_SCALE     1.5f    // 48x48
 
+#define PERSON_DRAW_SCALE  2.0f    // 32x32 vira 64x64
+
 #define DOG_FRAME_TIME     0.09f   // segundos por quadro
 #define BAG_FRAME_TIME     0.15f   // sacola balanca mais devagar
+#define PERSON_FRAME_TIME  0.10f   // pessoa corre mais rapido que a sacola balanca
 
 Entity* EntityCreate(EntityType type, Vector2 position) {
     Entity* entity = (Entity*)malloc(sizeof(Entity));
@@ -41,7 +44,9 @@ Entity* EntityCreate(EntityType type, Vector2 position) {
             break;
 
         case ENTITY_PERSON:
-            entity->size = (Vector2){20, 40};
+            // hitbox derivada da escala: 32 * 2 = 64x64
+            entity->size = (Vector2){ PERSON_FRAME_W * PERSON_DRAW_SCALE,
+                                      PERSON_FRAME_H * PERSON_DRAW_SCALE };
             entity->velocity = (Vector2){0, 40.0f};
             entity->color = PINK;
             entity->speed = 40.0f;
@@ -81,6 +86,13 @@ void EntityUpdate(Entity* entity, float deltaTime) {
             entity->frameTimer -= BAG_FRAME_TIME;
             entity->frame = (entity->frame + 1) % BAG_FRAME_COUNT;
         }
+    } else if (entity->type == ENTITY_PERSON) {
+        // pessoa: corre sem parar enquanto esta na tela
+        entity->frameTimer += deltaTime;
+        if (entity->frameTimer >= PERSON_FRAME_TIME) {
+            entity->frameTimer -= PERSON_FRAME_TIME;
+            entity->frame = (entity->frame + 1) % PERSON_FRAME_COUNT;
+        }
     }
 }
 
@@ -119,6 +131,17 @@ void EntityDraw(Entity* entity) {
                            BAG_FRAME_H * BAG_DRAW_SCALE };
 
         DrawTexturePro(TexturesGetBag(), source, dest, (Vector2){0, 0}, 0.0f, WHITE);
+    } else if (entity->type == ENTITY_PERSON && TexturesPersonLoaded()) {
+        Rectangle source = {
+            0.0f,
+            (float)(entity->frame * PERSON_FRAME_H),
+            (float)PERSON_FRAME_W,
+            (float)PERSON_FRAME_H
+        };
+        Rectangle dest = { entity->position.x, entity->position.y,
+                           entity->size.x, entity->size.y };
+
+        DrawTexturePro(TexturesGetPerson(), source, dest, (Vector2){0, 0}, 0.0f, WHITE);
     } else {
         DrawRectangleV(entity->position, entity->size, entity->color);
     }

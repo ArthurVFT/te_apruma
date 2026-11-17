@@ -72,9 +72,10 @@ void PlayerUpdate(void) {
 
 void PlayerDraw(void) {
     if (TexturesPlayerLoaded()) {
-        // quadro atual da folha, esticado para caber na hitbox
+        // quadro atual da folha, esticado para caber na hitbox.
+        // O desenho original olha para a direita: espelha so quando anda para a esquerda.
         Rectangle source = {
-            player.facingLeft ? (float)PLAYER_FRAME_W : -(float)PLAYER_FRAME_W,
+            player.facingLeft ? -(float)PLAYER_FRAME_W : (float)PLAYER_FRAME_W,
             (float)(player.frame * PLAYER_FRAME_H),
             (float)PLAYER_FRAME_W,
             (float)PLAYER_FRAME_H
