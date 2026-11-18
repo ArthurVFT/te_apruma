@@ -1,6 +1,8 @@
-// ranking.c - as melhores pontuacoes, guardadas numa matriz.
+// ranking.c - as melhores pontuacoes, guardadas numa matriz e salvas em arquivo.
 
 #include "ranking.h"
+#include "config.h"
+#include <stdio.h>
 
 // A matriz do ranking. "static" = privada deste arquivo.
 static int ranking[RANKING_SIZE][RANKING_COLS];
@@ -8,8 +10,34 @@ static int ranking[RANKING_SIZE][RANKING_COLS];
 // Quantas linhas ja foram preenchidas (0 ate RANKING_SIZE).
 static int filled = 0;
 
+// Le o arquivo e preenche a matriz. Sem arquivo, o ranking comeca vazio.
+static void RankingLoad(void) {
+    FILE* f = fopen(RANKING_FILE, "r");
+    if (f == NULL) return;
+
+    // fscanf devolve quantos valores leu: 2 = linha valida.
+    while (filled < RANKING_SIZE &&
+           fscanf(f, "%d %d", &ranking[filled][RANKING_POINTS],
+                              &ranking[filled][RANKING_BAGS]) == 2) {
+        filled++;
+    }
+    fclose(f);
+}
+
+// Regrava o arquivo inteiro com as linhas ocupadas da matriz.
+static void RankingSave(void) {
+    FILE* f = fopen(RANKING_FILE, "w");
+    if (f == NULL) return;   // sem permissao de escrita: o jogo continua
+
+    for (int i = 0; i < filled; i++) {
+        fprintf(f, "%d %d\n", ranking[i][RANKING_POINTS], ranking[i][RANKING_BAGS]);
+    }
+    fclose(f);
+}
+
 void RankingInit(void) {
     RankingClear();
+    RankingLoad();
 }
 
 // Zera a matriz inteira: percorre linhas e colunas.
@@ -54,6 +82,8 @@ void RankingAdd(int points, int bags) {
     if (filled < RANKING_SIZE) {
         filled++;
     }
+
+    RankingSave();
 }
 
 int RankingGet(int position, int column) {

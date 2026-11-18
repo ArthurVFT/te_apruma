@@ -198,7 +198,10 @@ static void SpawnBag(void) {
     if (entity == NULL) return;
 
     entity->velocity = (Vector2){0, 0};   // sacola parada
-    ListPushBack(world.entities, entity);
+    // Se a lista nao aceitou, a entidade nao entrou nela: liberamos aqui.
+    if (!ListPushBack(world.entities, entity)) {
+        EntityDestroy(entity);
+    }
 }
 
 // Nasce na lateral e ja entra com a velocidade do momento (cachorros
@@ -212,7 +215,10 @@ static void SpawnDog(float speed) {
     if (entity == NULL) return;
 
     entity->speed = speed;
-    ListPushBack(world.entities, entity);
+    // Se a lista nao aceitou, a entidade nao entrou nela: liberamos aqui.
+    if (!ListPushBack(world.entities, entity)) {
+        EntityDestroy(entity);
+    }
 }
 
 // Conta quantos cachorros ativos existem em cena.
@@ -254,6 +260,8 @@ void WorldReset(void) {
 
 void WorldUpdate(void) {
     if (world.finished) return;
+    // Sem lista nao ha onde guardar entidades: evita criar e vazar uma por segundo.
+    if (world.entities == NULL) return;
 
     float delta = GetFrameTime();
 

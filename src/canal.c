@@ -77,7 +77,10 @@ static void SpawnPerson(float speed){
 
     person->speed = speed;
     person->velocity = (Vector2){0,fromTop?speed:-speed};
-    ListPushBack(canal.entities, person);
+    // Se a lista nao aceitou, a entidade nao entrou nela: liberamos aqui.
+    if (!ListPushBack(canal.entities, person)) {
+        EntityDestroy(person);
+    }
 }
 
 // --- atualizacao das entidades ---
