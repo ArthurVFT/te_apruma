@@ -10,6 +10,22 @@ static int ranking[RANKING_SIZE][RANKING_COLS];
 // Quantas linhas ja foram preenchidas (0 ate RANKING_SIZE).
 static int filled = 0;
 
+// Ordena a matriz da MAIOR para a menor pontuacao (insertion sort).
+// Troca as linhas inteiras, para as colunas ficarem juntas.
+static void RankingSort(void) {
+    for (int i = 1; i < filled; i++) {
+        int j = i;
+        while (j > 0 && ranking[j - 1][RANKING_POINTS] < ranking[j][RANKING_POINTS]) {
+            for (int c = 0; c < RANKING_COLS; c++) {
+                int temp = ranking[j - 1][c];
+                ranking[j - 1][c] = ranking[j][c];
+                ranking[j][c] = temp;
+            }
+            j--;
+        }
+    }
+}
+
 // Le o arquivo linha a linha e preenche a matriz. Sem arquivo, o ranking comeca vazio.
 // Para na primeira linha sem as 3 colunas (ex.: arquivo antigo de 2 colunas).
 static void RankingLoad(void) {
@@ -27,6 +43,7 @@ static void RankingLoad(void) {
         filled++;
     }
     fclose(f);
+    RankingSort();   // ordena o que acabou de ser lido
 }
 
 // Regrava o arquivo inteiro com as linhas ocupadas da matriz.
@@ -57,13 +74,7 @@ void RankingClear(void) {
     filled = 0;
 }
 
-//
-// RankingAdd - insere (points, bags, rescued) na posicao correta, mantendo a matriz
-// ordenada da MAIOR para a menor pontuacao.
-//
-// A ideia e a do "insertion sort": comece pela ultima linha e va empurrando
-// as linhas menores uma casa para baixo, ate achar o lugar certo do novo valor.
-//
+
 void RankingAdd(int points, int bags, int rescued) {
     if (points <= 0) return;   // so pontuacoes positivas entram no ranking
 
