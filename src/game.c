@@ -7,6 +7,7 @@
 #include "ranking.h"
 #include "textures.h"  
 #include "canal.h" 
+#include "audio.h"
 
 // Em qual tela o jogo esta. Comeca no menu.
 static GameState state = GAME_STATE_MENU;
@@ -82,10 +83,12 @@ void GameInit(void) {
     WorldInit();
     CanalInit();
     RankingInit();
+    AudioLoad();
 }
 
 void GameRun(void) {
     while (!WindowShouldClose()) {
+        AudioUpdate();   // atualiza a musica de fundo
         // ---------------- UPDATE (logica) ----------------
         switch (state) {
             case GAME_STATE_MENU: {
@@ -121,6 +124,11 @@ void GameRun(void) {
                         RankingAdd(WorldGetScore(), WorldGetBagsCollected());
                         state = WorldDidWin() ? GAME_STATE_PHASE_COMPLETE
                                               : GAME_STATE_GAMEOVER;
+                        if (state == GAME_STATE_GAMEOVER){
+                            AudioPlayGameOver();
+                        } else {
+                            AudioPlayWin();
+                        }
                     }
                 } else if (currentPhase == 2) {
                     CanalUpdate();
@@ -248,6 +256,7 @@ void GameClose(void) {
     WorldClose();
     CanalClose();
     TexturesUnload();
+    AudioUnload();
     CloseWindow();
 }
 
