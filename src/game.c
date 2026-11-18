@@ -6,16 +6,20 @@
 #include "world.h"
 #include "ranking.h"
 #include "textures.h"  
-#include "canal.h" 
-#include "audio.h"
+#include "canal.h"
+#include "audio.h" 
 
 // Em qual tela o jogo esta. Comeca no menu.
 static GameState state = GAME_STATE_MENU;
 
 static int currentPhase = 1;   // fase inicial
 
+// Resultado da fase 1 guardado ate a fase 2 acabar: a partida vira uma unica linha no ranking.
+static int roundPoints = 0;
+static int roundBags   = 0;
 
-// --- Menu principal ---
+
+//  Menu principal
 
 #define MENU_ITEMS 3
 
@@ -23,7 +27,7 @@ static const char* menuLabels[MENU_ITEMS] = { "JOGAR", "RANKING", "SAIR" };
 static const int   menuY[MENU_ITEMS]      = { 240, 315, 390 };
 static int menuChoice = 0;   // opcao destacada: 0 = Jogar, 1 = Ranking, 2 = Sair
 
-// --- Menu de pausa (aberto com ESC ou P durante a fase) ---
+//Menu de pausa (aberto com ESC ou P durante a fase)
 
 #define PAUSE_ITEMS 3
 
@@ -55,6 +59,8 @@ static Rectangle PauseButtonBox(int index) {
 static void ActivateMenuItem(int index) {
     if (index == 0) {
         currentPhase = 1;
+        roundPoints = 0;
+        roundBags = 0;
         WorldReset();
         state = GAME_STATE_PLAYING;
     } else if (index == 1) {
@@ -124,10 +130,9 @@ void GameInit(void) {
 }
 
 void GameRun(void) {
-    while (!WindowShouldClose()) {
-        AudioUpdate();   // atualiza a musica de fundo
     while (!WindowShouldClose() && !quitRequested) {
-        // ---------------- UPDATE (logica) ----------------
+        AudioUpdate();   // atualiza a musica de fundo
+        // UPDATE (logica) 
         switch (state) {
             case GAME_STATE_MENU: {
                 // Teclado (com wrap: do fim volta ao comeco).
@@ -158,21 +163,22 @@ void GameRun(void) {
                 if (currentPhase == 1) {
                     WorldUpdate();
                     if (WorldIsFinished()) {
-                        // Ao terminar, registra a pontuacao no ranking.
-                        RankingAdd(WorldGetScore(), WorldGetBagsCollected());
-                        state = WorldDidWin() ? GAME_STATE_PHASE_COMPLETE
-                                              : GAME_STATE_GAMEOVER;
-                        if (state == GAME_STATE_GAMEOVER){
-                            AudioPlayGameOver();
+                        if (WorldDidWin()) {
+                            // Venceu: a partida continua na fase 2 e so entra no ranking no fim.
+                            roundPoints = WorldGetScore();
+                            roundBags = WorldGetBagsCollected();
+                            state = GAME_STATE_PHASE_COMPLETE;
                         } else {
-                            AudioPlayWin();
+                            // Perdeu a fase 1: a partida acaba aqui, sem pessoas resgatadas.
+                            RankingAdd(WorldGetScore(), WorldGetBagsCollected(), 0);
+                            state = GAME_STATE_GAMEOVER;
                         }
                     }
                 } else if (currentPhase == 2) {
                     CanalUpdate();
                     if (CanalIsFinished()) {
-                        // Mesmo registro da fase 1. Na fase 2 a segunda coluna guarda as pessoas resgatadas.
-                        RankingAdd(CanalGetScore(), CanalGetPeopleRescued());
+                        // Fim da partida: uma linha com pontos das duas fases, sacolas da fase 1 e pessoas da fase 2.
+                        RankingAdd(roundPoints + CanalGetScore(), roundBags, CanalGetPeopleRescued());
                         state = CanalDidWin() ? GAME_STATE_PHASE_COMPLETE
                                               : GAME_STATE_GAMEOVER;
                     }
@@ -226,7 +232,7 @@ void GameRun(void) {
                 break;
         }
 
-        // ---------------- DRAW (desenho) ----------------
+        // DRAW (desenho) 
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
@@ -287,11 +293,13 @@ void GameRun(void) {
                 } else {
                     // Percorre as LINHAS da matriz e mostra cada posicao.
                     for (int i = 0; i < RankingCount(); i++) {
-                        int pontos  = RankingGet(i, RANKING_POINTS);
-                        int sacolas = RankingGet(i, RANKING_BAGS);
+                        int pontos   = RankingGet(i, RANKING_POINTS);
+                        int sacolas  = RankingGet(i, RANKING_BAGS);
+                        int resgates = RankingGet(i, RANKING_RESCUED);
 
                         DrawTextCentered(
-                            TextFormat("%d.  %d pontos   (%d sacolas)", i + 1, pontos, sacolas),
+                            TextFormat("%d.  %d pontos   (%d sacolas, %d pessoas)",
+                                       i + 1, pontos, sacolas, resgates),
                             160 + i * 50, 26, DARKGRAY
                         );
                     }
