@@ -155,7 +155,7 @@ void GameRun(void) {
                     WorldUpdate();
                     if (WorldIsFinished()) {
                         // Ao terminar, registra a pontuacao no ranking.
-                        RankingAdd(WorldGetScore(), WorldGetBagsCollected());
+                        RankingAdd(WorldGetScore(), WorldGetBagsCollected(), 0);
                         state = WorldDidWin() ? GAME_STATE_PHASE_COMPLETE
                                               : GAME_STATE_GAMEOVER;
                     }
@@ -163,7 +163,7 @@ void GameRun(void) {
                     CanalUpdate();
                     if (CanalIsFinished()) {
                         // Mesmo registro da fase 1. Na fase 2 a segunda coluna guarda as pessoas resgatadas.
-                        RankingAdd(CanalGetScore(), CanalGetPeopleRescued());
+                        RankingAdd(CanalGetScore(), 0, CanalGetPeopleRescued());
                         state = CanalDidWin() ? GAME_STATE_PHASE_COMPLETE
                                               : GAME_STATE_GAMEOVER;
                     }
@@ -278,11 +278,13 @@ void GameRun(void) {
                 } else {
                     // Percorre as LINHAS da matriz e mostra cada posicao.
                     for (int i = 0; i < RankingCount(); i++) {
-                        int pontos  = RankingGet(i, RANKING_POINTS);
-                        int sacolas = RankingGet(i, RANKING_BAGS);
+                        int pontos   = RankingGet(i, RANKING_POINTS);
+                        int sacolas  = RankingGet(i, RANKING_BAGS);
+                        int resgates = RankingGet(i, RANKING_RESCUED);
 
                         DrawTextCentered(
-                            TextFormat("%d.  %d pontos   (%d sacolas)", i + 1, pontos, sacolas),
+                            TextFormat("%d.  %d pontos   (%d sacolas, %d pessoas)",
+                                       i + 1, pontos, sacolas, resgates),
                             160 + i * 50, 26, DARKGRAY
                         );
                     }

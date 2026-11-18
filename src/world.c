@@ -140,7 +140,7 @@ static void UpdateDog(Entity* dog, float delta, List* entities, int* score, floa
 
     EntityUpdate(dog, delta);
 
-    // Colisao cachorro x sacola (AABB). Marca inativa; a faxina remove.
+    // Colisao cachorro x sacola. 
     Rectangle dogBox = { dog->position.x, dog->position.y, dog->size.x, dog->size.y };
     Rectangle bagBox = { target->position.x, target->position.y,
                          target->size.x, target->size.y };
@@ -164,7 +164,7 @@ static void UpdateEntityCallback(void* data, void* context) {
     }
 }
 
-// --- colisao jogador x sacola ---
+//colisao jogador x sacola 
 
 typedef struct {
     Rectangle playerBox;
@@ -188,7 +188,7 @@ static void PlayerBagCollideCallback(void* data, void* context) {
     entity->active = false;
 }
 
-// --- spawn ---
+//spawn da sacola
 
 static void SpawnBag(void) {
     float x = RandomFloat(BAG_MARGIN_X, SCREEN_W - BAG_MARGIN_X);
@@ -198,7 +198,7 @@ static void SpawnBag(void) {
     if (entity == NULL) return;
 
     entity->velocity = (Vector2){0, 0};   // sacola parada
-    // Se a lista nao aceitou, a entidade nao entrou nela: liberamos aqui.
+    // Se a lista nao aceitou, a entidade nao entrou nela: liberamos aqui, basicamente um free.
     if (!ListPushBack(world.entities, entity)) {
         EntityDestroy(entity);
     }
@@ -245,7 +245,7 @@ void WorldInit(void) {
 void WorldReset(void) {
     if (world.entities == NULL) return;
 
-    // ListClear libera os NOS, entao destruimos os dados (Entity) antes.
+    // ListClear libera os NOS, entao destruimos os dados (Entity) antes, ou seja free em tudode entidade.
     ListForEach(world.entities, DestroyEntityCallback, NULL);
     ListClear(world.entities);
 
