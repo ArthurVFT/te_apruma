@@ -7,6 +7,7 @@
 #include "ranking.h"
 #include "textures.h"  
 #include "canal.h" 
+#include "audio.h"
 
 // Em qual tela o jogo esta. Comeca no menu.
 static GameState state = GAME_STATE_MENU;
@@ -125,13 +126,16 @@ void GameInit(void) {
     WorldInit();
     CanalInit();
     RankingInit();
+    AudioLoad();
 }
 
 void GameRun(void) {
     while (!WindowShouldClose() && !quitRequested) {
-        // UPDATE (logica) 
+        AudioUpdate();   // atualiza a musica de fundo
+        // UPDATE (logica)
         switch (state) {
             case GAME_STATE_MENU: {
+                AudioResumeMusic();  // caso venha do ranking ou creditos, a musica volta
                 // Teclado (com wrap: do fim volta ao comeco).
                 if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W))
                     menuChoice = (menuChoice + MENU_ITEMS - 1) % MENU_ITEMS;
@@ -155,7 +159,7 @@ void GameRun(void) {
                 break;
             }
 
-           case GAME_STATE_PLAYING:
+            case GAME_STATE_PLAYING:
                 PlayerUpdate();
                 if (currentPhase == 1) {
                     WorldUpdate();
@@ -165,10 +169,12 @@ void GameRun(void) {
                             roundPoints = WorldGetScore();
                             roundBags = WorldGetBagsCollected();
                             state = GAME_STATE_PHASE_COMPLETE;
+                            AudioPlayWin();
                         } else {
                             // Perdeu a fase 1: a partida acaba aqui, sem pessoas resgatadas.
                             RankingAdd(WorldGetScore(), WorldGetBagsCollected(), 0);
                             state = GAME_STATE_GAMEOVER;
+                            AudioPlayGameOver();
                         }
                     }
                 } else if (currentPhase == 2) {
@@ -178,6 +184,8 @@ void GameRun(void) {
                         RankingAdd(roundPoints + CanalGetScore(), roundBags, CanalGetPeopleRescued());
                         state = CanalDidWin() ? GAME_STATE_PHASE_COMPLETE
                                               : GAME_STATE_GAMEOVER;
+                        if (state == GAME_STATE_GAMEOVER) AudioPlayGameOver();
+                        else                              AudioPlayWin();
                     }
                 }
                 if (IsKeyPressed(KEY_P) || IsKeyPressed(KEY_ESCAPE)) {
@@ -185,7 +193,7 @@ void GameRun(void) {
                     state = GAME_STATE_PAUSED;
                 }
                 break;
-                
+
             case GAME_STATE_PAUSED: {
                 if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W))
                     pauseChoice = (pauseChoice + PAUSE_ITEMS - 1) % PAUSE_ITEMS;
@@ -208,8 +216,9 @@ void GameRun(void) {
                 break;
             }
 
-                case GAME_STATE_PHASE_COMPLETE:
+            case GAME_STATE_PHASE_COMPLETE:
                 if (IsKeyPressed(KEY_ENTER)) {
+                    AudioResumeMusic();
                     if (currentPhase == 1) {
                         currentPhase = 2;
                         CanalReset();
@@ -224,6 +233,7 @@ void GameRun(void) {
             case GAME_STATE_RANKING:
             case GAME_STATE_CREDITS:
                 if (IsKeyPressed(KEY_ENTER)) {
+                    AudioResumeMusic();
                     state = GAME_STATE_MENU;
                 }
                 break;
@@ -238,7 +248,7 @@ void GameRun(void) {
                 DrawMenu();
                 break;
 
-                case GAME_STATE_PLAYING:
+            case GAME_STATE_PLAYING:
                 if (currentPhase == 1) {
                     DrawRectangle(0, GROUND_Y, SCREEN_W, GROUND_HEIGHT, LIGHTGRAY);
                     WorldDraw();
@@ -269,9 +279,12 @@ void GameRun(void) {
 
             case GAME_STATE_PHASE_COMPLETE:
                 DrawTextCentered(TextFormat("FASE %d CONCLUIDA!", currentPhase), 250, 40, DARKGREEN);
-                DrawTextCentered(TextFormat("Pontuacao: %d",currentPhase == 1 ? WorldGetScore() : CanalGetScore()),310, 26, DARKGRAY);
+                DrawTextCentered(TextFormat("Pontuacao: %d",
+                                 currentPhase == 1 ? WorldGetScore() : CanalGetScore()),
+                                 310, 26, DARKGRAY);
                 DrawTextCentered(currentPhase == 1 ? "ENTER para ir a fase 2"
-                                                   : "ENTER para voltar ao menu",370, 20, DARKGRAY);
+                                                   : "ENTER para voltar ao menu",
+                                 370, 20, DARKGRAY);
                 break;
 
             case GAME_STATE_GAMEOVER:
@@ -320,6 +333,7 @@ void GameClose(void) {
     WorldClose();
     CanalClose();
     TexturesUnload();
+    AudioUnload();
     CloseWindow();
 }
 
