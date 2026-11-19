@@ -3,6 +3,10 @@
 *.o
 *.obj
 *.dll
+*.d
+
+# Configuração local de build
+config.mk
 
 # Pastas
 build/
