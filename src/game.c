@@ -135,6 +135,7 @@ void GameRun(void) {
         // UPDATE (logica)
         switch (state) {
             case GAME_STATE_MENU: {
+                AudioResumeMusic();  // caso venha do ranking ou creditos, a musica volta
                 // Teclado (com wrap: do fim volta ao comeco).
                 if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W))
                     menuChoice = (menuChoice + MENU_ITEMS - 1) % MENU_ITEMS;
@@ -217,6 +218,7 @@ void GameRun(void) {
 
             case GAME_STATE_PHASE_COMPLETE:
                 if (IsKeyPressed(KEY_ENTER)) {
+                    AudioResumeMusic();
                     if (currentPhase == 1) {
                         currentPhase = 2;
                         CanalReset();
@@ -231,6 +233,7 @@ void GameRun(void) {
             case GAME_STATE_RANKING:
             case GAME_STATE_CREDITS:
                 if (IsKeyPressed(KEY_ENTER)) {
+                    AudioResumeMusic();
                     state = GAME_STATE_MENU;
                 }
                 break;

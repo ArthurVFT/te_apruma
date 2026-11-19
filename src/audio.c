@@ -22,9 +22,19 @@ void AudioUpdate(void) {
     UpdateMusicStream(music);
 }
 
-void AudioPlayWin(void)      { PlaySound(winSound); }
-void AudioPlayGameOver(void) { PlaySound(gameOverSound); }
+void AudioPlayWin(void) {
+    PauseMusicStream(music);
+    PlaySound(winSound);
+}
 
+void AudioPlayGameOver(void) {
+    PauseMusicStream(music);
+    PlaySound(gameOverSound);
+}
+
+void AudioResumeMusic(void) {
+    ResumeMusicStream(music);
+}
 void AudioUnload(void) {
     UnloadSound(winSound);
     UnloadSound(gameOverSound);
