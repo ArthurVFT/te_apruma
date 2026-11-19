@@ -2,7 +2,7 @@
 
 > *Saúde na comunidade*
 
-Jogo casual em C, feito com a biblioteca **[Raylib](https://www.raylib.com/)**, desenvolvido para a disciplina **Programação Imperativa e Funcional (PIF) — 2026.2**, na CESAR School.
+Jogo casual em C, feito com a biblioteca **[Raylib](https://www.raylib.com/)**, desenvolvido para a disciplina **Programação Imperativa e Funcional (PIF) - 2026.2**, na CESAR School.
 
 ## Sobre o Jogo
 
@@ -24,7 +24,7 @@ A partida tem as duas fases em sequência. A dificuldade aumenta com o tempo: os
 | Menu | Setas ou W/S | Escolher opção |
 | Menu | ENTER ou clique | Confirmar opção |
 | Menu | R | Abrir o ranking |
-| Fase | Setas ou W/A/S/D | Mover o Ítalo |
+| Fase | Setas ou W/A/S/D | Mover o Player |
 | Fase | ESC ou P | Abrir o menu de pausa |
 | Pausa | Setas ou W/S, ENTER ou clique | Escolher CONTINUAR, MENU PRINCIPAL ou SAIR |
 | Pausa | ESC ou P | Voltar ao jogo |
