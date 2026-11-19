@@ -1,13 +1,12 @@
 #ifndef LIST_H
 #define LIST_H
 
-#include <stdlib.h>   // malloc, free, NULL
+#include <stdlib.h>   
 #include <stdbool.h>
 
-//
+
 // Lista encadeada generica: guarda void* (nao sabe o que esta guardando).
-// Quem usa a lista e responsavel por criar e destruir os dados.
-//
+
 
 typedef struct Node {
     void* data;
@@ -22,8 +21,11 @@ typedef struct {
 
 List* ListCreate(void);
 void ListDestroy(List* list);
-void ListPushBack(List* list, void* data);
-void ListPushFront(List* list, void* data);
+
+// Retornam false se nao conseguiram inserir (lista NULL ou falha de malloc).
+// Nesse caso o dado NAO entrou na lista: quem chamou continua dono e deve liberar.
+bool ListPushBack(List* list, void* data);
+bool ListPushFront(List* list, void* data);
 bool ListPopFront(List* list, void** data);
 bool ListRemove(List* list, void* data);
 void ListClear(List* list);

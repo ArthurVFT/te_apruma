@@ -14,9 +14,7 @@ O jogo nasceu de um hackathon sobre mudanças climáticas, que discutiu o papel 
 
 - **Fase 1 - Rua Limpa**: Pegue as sacolas de lixo antes que os cachorros caramelos consigam pegá-las e espalhar o lixo.
 - **Fase 2 - Canal**: Retire as pessoas que entram no canal, evitando a formação de multidões e riscos à saúde (como leptospirose e correnteza forte).
-- **Fase 3 - Bueiros e Chuva Torrencial** (em desenvolvimento): Desentupa os bueiros antes que a rua alague.
-- **Fase 4 - Evacuação na Encosta** (em desenvolvimento): Conduza os moradores até o abrigo antes de um deslizamento.
-- **Fase 5 - Coleta Seletiva** (em desenvolvimento): Direcione os resíduos para a lixeira correta.
+
 
 ## Como Compilar e Rodar
 
