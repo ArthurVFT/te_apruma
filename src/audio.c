@@ -14,7 +14,7 @@ void AudioLoad(void) {
     gameOverSound = LoadSound("assets/audio/death.wav");
 
     music = LoadMusicStream("assets/audio/background.wav");
-    SetMusicVolume(music, 0.2f);   // musica mais baixa que os efeitos
+    SetMusicVolume(music, 0.8f);   // musica mais baixa que os efeitos
     PlayMusicStream(music);        // a musica repete sozinha
 }
 
