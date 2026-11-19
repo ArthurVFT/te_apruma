@@ -49,29 +49,28 @@ As pontuações são salvas no arquivo `ranking.txt`, criado na pasta de onde o 
 
 O projeto usa o **[w64devkit](https://github.com/skeeto/w64devkit)** (que traz o `gcc` e o `make`) e a Raylib para Windows.
 
-1. Instale o w64devkit e baixe a Raylib para MinGW-w64.
-2. Abra o `Makefile` e ajuste as duas primeiras variáveis para os caminhos da sua instalação:
-   ```makefile
-   CC = caminho/para/w64devkit/bin/gcc.exe
-   RAYLIB_PATH = caminho/para/raylib
+1. Instale o **w64devkit x64** (o compilador de 64 bits) e baixe a **Raylib 6.0 para MinGW-w64 (64 bits)**.
+2. Na raiz do projeto, copie o modelo de configuração:
+   ```powershell
+   copy config.mk.example config.mk
    ```
-3. No terminal, na raiz do projeto:
+3. Abra o `config.mk` e ajuste `CC` (caminho do `gcc.exe` do w64devkit) e `RAYLIB_PATH` (pasta que contém `include\raylib.h`). Use `/` no lugar de `\`.
+4. No terminal, na raiz do projeto:
    ```powershell
    make
    ```
 
-O executável é gerado em `build/teapruma.exe`.
+O executável é gerado em `build/teapruma.exe`. O `config.mk` é só da sua máquina e não vai para o Git. Se o `make` reclamar que a Raylib não foi encontrada ou que o compilador não é 64 bits, confira esses dois caminhos.
 
 ### Linux
 
-No Linux, o `Makefile` atual **não funciona** porque usa caminhos e bibliotecas do Windows. Compile direto com o `gcc`:
-
-1. Instale o `gcc` e a Raylib (por exemplo, `sudo apt install build-essential libraylib-dev`; se a versão do repositório for antiga, compile a Raylib pelo código-fonte).
-2. Na raiz do projeto:
+1. Instale o `gcc`, o `make` e a Raylib (por exemplo, `sudo apt install build-essential libraylib-dev`). Se a versão do repositório for antiga, compile a Raylib pelo código-fonte.
+2. Na raiz do projeto, rode:
    ```bash
-   mkdir -p build
-   gcc src/*.c -Iinclude -o build/teapruma -lraylib -lm -lpthread -ldl -lrt -lX11
+   make
    ```
+
+O `Makefile` detecta o Linux e usa o `pkg-config` para achar a Raylib. Não precisa de `config.mk`.
 
 ## Como Executar
 
