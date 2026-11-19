@@ -1,0 +1,13 @@
+# config.mk.example - modelo de configuracao local.
+#
+# Copie este arquivo para "config.mk" (na raiz do projeto) e ajuste os caminhos
+# da sua maquina. O config.mk NAO vai para o Git (esta no .gitignore).
+#
+# Windows: use o compilador de 64 bits (w64devkit x64) e a Raylib MinGW-w64 64 bits.
+# Linux: nao precisa de config.mk; o Makefile usa a Raylib instalada pelo sistema.
+
+# Compilador (w64devkit x64). Se nao for definido, o make usa o gcc do PATH.
+CC = C:/caminho/para/w64devkit/bin/gcc.exe
+
+# Pasta que contem include/raylib.h e lib/libraylib.a
+RAYLIB_PATH = C:/caminho/para/raylib-6.0_win64_mingw-w64/raylib-6.0_win64_mingw-w64

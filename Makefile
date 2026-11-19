@@ -15,6 +15,13 @@ DEPS      = $(OBJECTS:.o=.d)
 
 ifeq ($(OS),Windows_NT)
     RAYLIB_PATH ?= C:/raylib/raylib
+    # Erros claros antes de compilar, em vez de "undefined reference" no fim.
+    ifeq ($(wildcard $(RAYLIB_PATH)/include/raylib.h),)
+        $(error raylib.h nao encontrado em '$(RAYLIB_PATH)'. Ajuste RAYLIB_PATH no config.mk)
+    endif
+    ifeq ($(findstring x86_64,$(shell $(CC) -dumpmachine)),)
+        $(error '$(CC)' nao e 64 bits. Use o w64devkit x64 e ajuste CC no config.mk)
+    endif
     INCLUDES = -I$(RAYLIB_PATH)/include -Iinclude
     LIBS     = -L$(RAYLIB_PATH)/lib -lraylib -lopengl32 -lgdi32 -lwinmm
     TARGET   = $(BUILD_DIR)/teapruma.exe
