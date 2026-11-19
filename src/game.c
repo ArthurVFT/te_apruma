@@ -250,7 +250,11 @@ void GameRun(void) {
 
             case GAME_STATE_PLAYING:
                 if (currentPhase == 1) {
-                    DrawRectangle(0, GROUND_Y, SCREEN_W, GROUND_HEIGHT, LIGHTGRAY);
+                    if (TexturesStreetBgLoaded()) {
+                        DrawTexture(TexturesGetStreetBg(), 0, 0, WHITE);
+                    } else {
+                        DrawRectangle(0, GROUND_Y, SCREEN_W, GROUND_HEIGHT, LIGHTGRAY);
+                    }
                     WorldDraw();
                 } else {
                     CanalDraw();
