@@ -5,6 +5,8 @@ static Texture2D dogTexture;
 static Texture2D bagTexture;
 static Texture2D playerTexture;
 static Texture2D personTexture;
+static Texture2D streetBgTexture;
+static Texture2D riverBgTexture;
 
 // Carrega uma textura e deixa a pixel art nitida ao ampliar.
 // Retorna false (e avisa no log) se o arquivo nao for encontrado.
@@ -23,6 +25,8 @@ void TexturesLoad(void) {
     LoadPixelTexture(&bagTexture,    "assets/sprites/SacoDeLixo_3.png");
     LoadPixelTexture(&playerTexture, "assets/sprites/italo.png");
     LoadPixelTexture(&personTexture, "assets/sprites/italo_azul.png");
+    LoadPixelTexture(&streetBgTexture, "assets/backgrounds/rua_fundo.png");
+    LoadPixelTexture(&riverBgTexture,  "assets/backgrounds/canal_fundo.png");
 }
 
 void TexturesUnload(void) {
@@ -30,6 +34,8 @@ void TexturesUnload(void) {
     if (bagTexture.id    != 0) { UnloadTexture(bagTexture);    bagTexture.id = 0; }
     if (playerTexture.id != 0) { UnloadTexture(playerTexture); playerTexture.id = 0; }
     if (personTexture.id != 0) { UnloadTexture(personTexture); personTexture.id = 0; }
+    if (streetBgTexture.id != 0) { UnloadTexture(streetBgTexture); streetBgTexture.id = 0; }
+    if (riverBgTexture.id  != 0) { UnloadTexture(riverBgTexture);  riverBgTexture.id = 0; }
 }
 
 bool TexturesDogLoaded(void)    { return dogTexture.id    != 0; }
@@ -43,3 +49,9 @@ Texture2D TexturesGetPlayer(void) { return playerTexture; }
 
 bool TexturesPersonLoaded(void) { return personTexture.id != 0; }
 Texture2D TexturesGetPerson(void) { return personTexture; }
+
+bool TexturesStreetBgLoaded(void) { return streetBgTexture.id != 0; }
+Texture2D TexturesGetStreetBg(void) { return streetBgTexture; }
+
+bool TexturesRiverBgLoaded(void) { return riverBgTexture.id != 0; }
+Texture2D TexturesGetRiverBg(void) { return riverBgTexture; }

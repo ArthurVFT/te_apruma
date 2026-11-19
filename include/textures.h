@@ -40,4 +40,10 @@ Texture2D TexturesGetPlayer(void);
 bool      TexturesPersonLoaded(void);
 Texture2D TexturesGetPerson(void);
 
+// Fundos das fases (1280x720)
+bool      TexturesStreetBgLoaded(void);
+Texture2D TexturesGetStreetBg(void);
+bool      TexturesRiverBgLoaded(void);
+Texture2D TexturesGetRiverBg(void);
+
 #endif

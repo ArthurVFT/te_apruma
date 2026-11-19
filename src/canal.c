@@ -15,6 +15,7 @@
 #include "config.h"
 #include "entity.h"
 #include "player.h"
+#include "textures.h"
 
 #define PHASE_DURATION   30.0f
 
@@ -203,7 +204,11 @@ void CanalUpdate(void) {
 
 void CanalDraw(void) {
 
-    DrawRectangle(0, 300, SCREEN_W, 120, BLUE);
+    if (TexturesRiverBgLoaded()) {
+        DrawTexture(TexturesGetRiverBg(), 0, 0, WHITE);
+    } else {
+        DrawRectangle(0, 300, SCREEN_W, 120, BLUE);
+    }
 
     ListForEach(canal.entities, DrawEntityCallback, NULL);
     
