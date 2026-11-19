@@ -10,6 +10,10 @@ Você é um **agente comunitário** que circula pela comunidade resolvendo situa
 
 O jogo nasceu de um hackathon sobre mudanças climáticas, que discutiu o papel social das comunidades, as mais afetadas ambiental e financeiramente. A ideia é transformar esse tema em algo lúdico, sem culpar os moradores: a comunidade é a protagonista, e o jogo mostra que muitos riscos vêm da falta de infraestrutura.
 
+## Vídeo do Jogo
+
+▶️ **[Assistir ao vídeo do jogo](https://youtu.be/Z5ZM2SgRebY)**
+
 ## Fases
 
 - **Fase 1 - Rua Limpa**: pegue as sacolas de lixo antes que os cachorros consigam pegá-las e espalhar o lixo. Cada sacola coletada vale 1 ponto; cada sacola que o cachorro come tira 1 ponto. Dura 30 segundos e você vence com pontuação maior que zero.
