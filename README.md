@@ -95,7 +95,6 @@ te_apruma/
 ├── include/          # Cabeçalhos (.h): declarações de cada módulo
 ├── src/              # Código-fonte (.c): implementação de cada módulo
 ├── build/            # Arquivos gerados pela compilação
-├── main.c            # Exemplo antigo de teste da Raylib (não é o ponto de entrada)
 ├── Makefile          # Compilação para Windows
 └── README.md
 ```
